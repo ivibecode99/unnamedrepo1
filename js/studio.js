@@ -217,7 +217,7 @@ const Studio = (() => {
 
 /* ---------- Brand page ---------- */
 const BrandUI = (() => {
-  const FONTS = ['Oswald', 'Bebas Neue', 'Anton', 'Montserrat', 'Poppins', 'Roboto Condensed', 'Rajdhani', 'Orbitron', 'Playfair Display', 'Inter'];
+  const FONTS = ['Montserrat', 'Oswald', 'Bebas Neue', 'Anton', 'Poppins', 'Roboto Condensed', 'Rajdhani', 'Orbitron', 'Playfair Display', 'Inter'];
   const ids = { name: 'b_name', tagline: 'b_tag', c1: 'b_c1', c3: 'b_c3', c2: 'b_c2', labelBg: 'b_lbg', labelFg: 'b_lfg', font: 'b_font' };
 
   async function preview() {
@@ -276,7 +276,7 @@ const SettingsUI = (() => {
       for (const k in j.ls) localStorage.setItem(k, j.ls[k]);
       for (const k in j.blobs) await DB.put(k, await dataURLToBlob(j.blobs[k]));
       toast('Backup restored', 'ok'); setTimeout(() => location.reload(), 700);
-    } catch { toast('That is not a CardVault backup file', 'err'); }
+    } catch { toast('That is not a QOG backup file', 'err'); }
   }
   function init() {
     const keys = ['slabW', 'slabH', 'labelW', 'labelH', 'cardW', 'cardH'];

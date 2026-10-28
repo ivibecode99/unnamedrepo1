@@ -1,4 +1,4 @@
-# CardVault
+# QOG
 
 A single-user, **no-backend** web app for scanning, cataloguing, grading and "slabbing" trading & sports cards.
 Static HTML/CSS/JS only – no server, no login. All data stays in your browser (localStorage + IndexedDB).

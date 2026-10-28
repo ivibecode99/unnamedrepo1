@@ -1,6 +1,6 @@
 /* Brand + rendering of labels, slabs and info sheets (all canvas, all local) */
 const Brand = {
-  DEF: { name: 'My Grading Co', tagline: 'Card Grading', c1: '#c8102e', c2: '#111111', c3: '#f2b705', labelBg: '#ffffff', labelFg: '#111111', font: 'Oswald' },
+  DEF: { name: 'Quantum Optical Grading', tagline: 'QOG · Precision Card Grading', c1: '#8b5cf6', c2: '#1c1c1f', c3: '#c4a7ff', labelBg: '#1c1c1f', labelFg: '#ffffff', font: 'Montserrat' },
   _logo: undefined,
   get() { return Object.assign({}, this.DEF, Store.get('brand', {})); },
   save(b) { const { logo, ...rest } = b; Store.set('brand', rest); },
@@ -138,7 +138,7 @@ const Slab = (() => {
   /* Letter-size report: slab + all the card info/stats.  info = card.info, meta = card fields */
   function renderSheet({ meta, info, grade, brand: b, slabCanvas, subs }) {
     const W = 1700, H = 2200, c = newCanvas(W, H), x = c.getContext('2d'), F = fam(b);
-    x.fillStyle = '#ffffff'; x.fillRect(0, 0, W, H);
+    x.fillStyle = b.c2; x.fillRect(0, 0, W, H);
     // header
     x.fillStyle = b.c1; x.fillRect(0, 0, W, 200);
     x.fillStyle = b.c3; x.fillRect(0, 200, W, 12);
@@ -157,11 +157,11 @@ const Slab = (() => {
     // right column
     const rx = 740, rw = W - rx - 60;
     let y = 330;
-    x.fillStyle = b.c2;
+    x.fillStyle = '#ffffff';
     const title = meta.name || 'Untitled card';
     fitFont(x, title, rw, 78, 800, F); x.fillText(title, rx, y);
     y += 52;
-    x.fillStyle = '#555'; x.font = `400 34px ${F}`;
+    x.fillStyle = '#b5b5c3'; x.font = `400 34px ${F}`;
     const sub = [meta.year, meta.set, meta.number ? '#' + meta.number : '', meta.variant || meta.rarity].filter(Boolean).join('  •  ');
     fitFont(x, sub, rw, 34, 400, F); x.fillText(sub, rx, y);
     y += 50;
@@ -175,13 +175,13 @@ const Slab = (() => {
       const names = [['centering', 'Centering'], ['corners', 'Corners'], ['edges', 'Edges'], ['surface', 'Surface']];
       names.forEach(([k, lab], i) => {
         const yy = y + 36 + i * 48, bx = rx + 440, bw = rw - 440 - 70;
-        x.fillStyle = '#111'; x.font = `500 28px ${F}`; x.fillText(lab, rx + 290, yy + 8);
-        rr(x, bx, yy - 14, bw, 20, 10); x.fillStyle = '#e6e8ec'; x.fill();
+        x.fillStyle = '#ffffff'; x.font = `500 28px ${F}`; x.fillText(lab, rx + 290, yy + 8);
+        rr(x, bx, yy - 14, bw, 20, 10); x.fillStyle = 'rgba(255,255,255,.14)'; x.fill();
         rr(x, bx, yy - 14, Math.max(20, bw * (subs[k] / 10)), 20, 10); x.fillStyle = b.c3; x.fill();
-        x.fillStyle = '#111'; x.font = `700 28px ${F}`; x.textAlign = 'right'; x.fillText(String(subs[k]), rx + rw, yy + 8); x.textAlign = 'left';
+        x.fillStyle = '#ffffff'; x.font = `700 28px ${F}`; x.textAlign = 'right'; x.fillText(String(subs[k]), rx + rw, yy + 8); x.textAlign = 'left';
       });
       y += 240;
-      x.fillStyle = '#777'; x.font = `400 22px ${F}`;
+      x.fillStyle = '#a0a0b0'; x.font = `400 22px ${F}`;
       x.fillText(`Cert #${grade.cert}  •  Estimated grade, see disclaimer`, rx, y);
       y += 50;
     }
@@ -196,15 +196,15 @@ const Slab = (() => {
     if (meta.value) add('Est. value', money(meta.value));
     (info?.fields || []).forEach(([k, v]) => add(k, v));
     x.fillStyle = b.c1; x.fillRect(rx, y, 80, 6); y += 40;
-    x.fillStyle = '#111'; x.font = `700 32px ${F}`; x.fillText('CARD STATS & INFO', rx, y); y += 20;
+    x.fillStyle = '#ffffff'; x.font = `700 32px ${F}`; x.fillText('CARD STATS & INFO', rx, y); y += 20;
     const colW = rw / 2;
     let col = 0, rowY = y + 40, maxY = rowY;
     const limit = 1500;
     for (const [k, v] of fields) {
-      x.font = `400 21px ${F}`; x.fillStyle = '#777';
+      x.font = `400 21px ${F}`; x.fillStyle = '#a0a0b0';
       const kk = k.toUpperCase();
       x.fillText(kk.length > 30 ? kk.slice(0, 29) + '…' : kk, rx + col * colW, rowY);
-      x.font = `600 27px ${F}`; x.fillStyle = '#111';
+      x.font = `600 27px ${F}`; x.fillStyle = '#ffffff';
       const lines = wrapText(x, v, colW - 24).slice(0, 2);
       lines.forEach((ln, i) => x.fillText(ln, rx + col * colW, rowY + 32 + i * 30));
       const hgt = 48 + lines.length * 30;
@@ -220,14 +220,14 @@ const Slab = (() => {
       if (y > 1990) break;
       x.fillStyle = b.c1; x.font = `700 26px ${F}`;
       x.fillText(k.toUpperCase().slice(0, 70), 60, y); y += 34;
-      x.fillStyle = '#222'; x.font = `400 25px ${F}`;
+      x.fillStyle = '#e8e8ee'; x.font = `400 25px ${F}`;
       const lines = wrapText(x, v, W - 120);
       for (const ln of lines) { if (y > 2000) { x.fillText('…', 60, y); y += 30; break; } x.fillText(ln, 60, y); y += 32; }
       y += 14;
     }
     // footer
-    x.fillStyle = '#eef0f3'; x.fillRect(0, 2090, W, 110);
-    x.fillStyle = '#666'; x.font = `400 21px ${F}`;
+    x.fillStyle = 'rgba(255,255,255,.07)'; x.fillRect(0, 2090, W, 110);
+    x.fillStyle = '#a0a0b0'; x.font = `400 21px ${F}`;
     const disc = 'Condition grade is an automated estimate produced by this tool. It is not a PSA, BGS, SGC or CGC grade and is not affiliated with any grading company.';
     wrapText(x, disc, W - 120).forEach((ln, i) => x.fillText(ln, 60, 2135 + i * 28));
     if (notesOf(info)) { x.textAlign = 'right'; x.fillText(notesOf(info), W - 60, 2185); x.textAlign = 'left'; }
