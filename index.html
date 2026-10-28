@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CardVault – scan, grade &amp; slab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Bebas+Neue&family=Anton&family=Montserrat:wght@400;500;600;800&family=Poppins:wght@400;500;600;800&family=Roboto+Condensed:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Orbitron:wght@500;700;800&family=Playfair+Display:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="logo">▣ CardVault</div>
+  <nav>
+    <a href="#scan" data-p="scan">Scan</a>
+    <a href="#collection" data-p="collection">Collection</a>
+    <a href="#studio" data-p="studio">Slab Studio</a>
+    <a href="#brand" data-p="brand">Brand</a>
+    <a href="#settings" data-p="settings">Settings</a>
+  </nav>
+</header>
+
+<main>
+<!-- ============ SCAN ============ -->
+<section id="page-scan" class="page">
+  <div class="split">
+    <div class="panel">
+      <div class="row cam-row">
+        <label class="inline">Camera</label>
+        <select id="camSelect" class="grow"><option value="">Click ↻ to find cameras</option></select>
+        <button class="btn" id="camRefresh" title="Find cameras">↻</button>
+        <button class="btn primary" id="camToggle">Start camera</button>
+      </div>
+      <div class="viewport" id="viewport">
+        <video id="video" playsinline muted></video>
+        <div class="guide"></div>
+        <div class="flash" id="flash"></div>
+        <div class="vstatus" id="camStatus">Camera off</div>
+        <div class="vinfo" id="camInfo"></div>
+      </div>
+      <div id="uploadZone" class="dropzone hidden">
+        <p><b>Drop scans / photos here</b></p>
+        <p class="muted">or</p>
+        <label class="btn primary">Choose files…<input type="file" id="fileInput" accept="image/*" multiple hidden></label>
+      </div>
+      <div class="row center">
+        <div id="sidePrompt" class="sideprompt"></div>
+        <button class="btn big primary hidden" id="snapBtn">📸 Capture <small>(Space)</small></button>
+        <button class="btn" id="skipBack">Skip back →</button>
+      </div>
+      <div id="pendingBox" class="pending hidden">
+        <b id="pendingTitle">Captured</b>
+        <canvas id="pendingCv"></canvas>
+        <div class="row center"><button class="btn primary" id="useBtn">✔ Use this (Space)</button><button class="btn" id="retakeBtn">↺ Retake</button></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Mode</h3>
+      <div class="modes">
+        <label class="mode"><input type="radio" name="mode" value="fast"><span><b>⚡ Fast slide</b><small>Slide cards in, auto-captured</small></span></label>
+        <label class="mode"><input type="radio" name="mode" value="manual"><span><b>📸 Manual</b><small>You press the shutter</small></span></label>
+        <label class="mode"><input type="radio" name="mode" value="upload"><span><b>⬆ Upload scan</b><small>Files from your scanner</small></span></label>
+      </div>
+      <p class="muted small" id="modeHelp"></p>
+
+      <h3>Sides</h3>
+      <div class="chips">
+        <label class="chip2"><input type="radio" name="sides" value="1"> Front only</label>
+        <label class="chip2"><input type="radio" name="sides" value="2"> Front + back</label>
+      </div>
+
+      <h3>Category</h3>
+      <select id="scanCat" class="cat-select full"></select>
+      <label class="chk"><input type="checkbox" id="optIdentify"> Auto-identify with OCR + card database (TCG)</label>
+      <label class="chk"><input type="checkbox" id="optCrop"> Auto-crop card from background</label>
+      <label class="chk"><input type="checkbox" id="optRotate"> Auto-rotate camera shots to portrait</label>
+
+      <div id="fastOpts" class="hidden">
+        <h3>Fast-mode tuning</h3>
+        <div class="slider"><label>Sensitivity</label><input type="range" id="optSens" min="1" max="9" step="1"><b id="optSensV"></b></div>
+        <div class="slider"><label>Hold-still (ms)</label><input type="range" id="optHold" min="200" max="1200" step="50"><b id="optHoldV"></b></div>
+        <div class="row wrap"><button class="btn" id="bgBtn">Set empty background</button><button class="btn" id="bgClear">Clear</button></div>
+        <p class="muted small">Tip: point the camera at a plain mat (dark or light), press “Set empty background”, then slide cards in. Duplicate captures of the same card are skipped.</p>
+      </div>
+
+      <h3>Just scanned <small class="muted" id="recentCount"></small></h3>
+      <div id="recent" class="recent"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COLLECTION ============ -->
+<section id="page-collection" class="page">
+  <div class="panel">
+    <div class="row wrap tools">
+      <input id="fQ" placeholder="Search name, set, year, team…" class="grow">
+      <select id="fCat"></select>
+      <select id="fStatus"><option value="">All</option><option value="graded">Graded</option><option value="ungraded">Not graded</option><option value="review">Needs info</option><option value="listed">Listed</option></select>
+      <select id="fSort"><option value="new">Newest</option><option value="old">Oldest</option><option value="name">Name</option><option value="value">Value</option><option value="grade">Grade</option></select>
+    </div>
+    <div class="row wrap tools">
+      <span id="collStats" class="muted"></span><span class="grow"></span>
+      <span id="selCount" class="muted"></span>
+      <button class="btn" id="selAll">Select all / none</button>
+      <button class="btn" id="exCSV" title="Selected cards, or everything shown if nothing is selected">⬇ CSV</button>
+      <button class="btn" id="exXLSX">⬇ Excel (.xlsx)</button>
+      <button class="btn" id="exList">⬇ Listing sheet</button>
+      <button class="btn danger needsel" id="delSel" disabled>Delete selected</button>
+    </div>
+  </div>
+  <div id="collGrid" class="grid"></div>
+</section>
+
+<!-- ============ STUDIO ============ -->
+<section id="page-studio" class="page">
+  <div class="split studio">
+    <div>
+      <div class="panel">
+        <h3>1 · Pick the card</h3>
+        <div class="tabs" id="stTabs">
+          <button class="on" data-tab="coll">My collection</button><button data-tab="upload">Upload image</button><button data-tab="web">Search web (HQ digital)</button>
+        </div>
+        <div class="tabpane" data-pane="coll">
+          <button class="btn primary" id="stPick">Choose from collection…</button> <span id="stPicked" class="muted"></span>
+        </div>
+        <div class="tabpane hidden" data-pane="upload">
+          <input type="file" id="stFile" accept="image/*">
+          <label class="chk"><input type="checkbox" id="stCrop" checked> Auto-crop the card from the background</label>
+        </div>
+        <div class="tabpane hidden" data-pane="web">
+          <div class="row wrap"><select id="stCat" class="cat-select"></select><input id="stName" placeholder="Card name" class="grow"><input id="stNum" placeholder="# (opt.)" size="6"><button class="btn primary" id="stSearch">Search</button></div>
+          <div class="row"><input id="stUrl" placeholder="…or paste a direct image URL (https://…)" class="grow"><button class="btn" id="stUrlGo">Load</button></div>
+          <div id="stResults" class="results"></div>
+          <p class="muted small">Pokémon, Magic and Yu-Gi-Oh! pull official high-resolution art from free card databases. For sports cards upload your scan or paste an image URL.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>2 · Image to use</h3>
+        <div id="stSources" class="chips"></div>
+        <label class="chk"><input type="checkbox" id="stBg" checked> Remove background (clean rounded card cut-out, transparent)</label>
+      </div>
+
+      <div class="panel">
+        <h3>3 · Grade <small class="muted">· automatic estimate, adjust freely</small></h3>
+        <div class="row wrap"><button class="btn primary" id="stAuto">⚙ Auto-grade this image</button>
+          <select id="stScale"><option value="int">Whole grades (1–10)</option><option value="half">Half grades (9.5)</option></select></div>
+        <div id="stSubs"></div>
+        <div class="row wrap">
+          <label class="lab">Override final grade<input id="stOverride" type="number" min="1" max="10" step="0.5" placeholder="auto"></label>
+          <label class="lab">Cert # <span class="row"><input id="stCert"><button class="btn" id="stCertNew" title="New number">🎲</button></span></label>
+          <div class="finalbox">Final<br><b id="stFinal">–</b></div>
+        </div>
+        <div id="stNotes"></div>
+      </div>
+
+      <div class="panel">
+        <h3>4 · Card details &amp; label text</h3>
+        <div class="form">
+          <label class="lab">Category<select id="m_category" class="cat-select"></select></label>
+          <label class="lab">Name / player<input id="m_name"></label>
+          <label class="lab">Set<input id="m_set"></label>
+          <label class="lab">Year<input id="m_year"></label>
+          <label class="lab">Card #<input id="m_number"></label>
+          <label class="lab">Variant / parallel<input id="m_variant"></label>
+          <label class="lab">Rarity<input id="m_rarity"></label>
+        </div>
+        <details><summary>Custom label lines (leave blank for automatic)</summary>
+          <div class="form one"><label class="lab">Line 1<input id="l_1" placeholder="year + set"></label><label class="lab">Line 2<input id="l_2" placeholder="name + #number"></label><label class="lab">Line 3<input id="l_3" placeholder="variant / rarity"></label></div>
+        </details>
+        <button class="btn primary" id="stSave">💾 Save grade to my collection</button>
+      </div>
+    </div>
+
+    <div class="sticky">
+      <div class="panel">
+        <h3>Label</h3>
+        <div class="canvas-wrap"><canvas id="labelCv"></canvas></div>
+        <div class="row wrap">
+          <button class="btn" id="dlLabel">⬇ Label PNG (300 dpi)</button>
+          <button class="btn" id="prLabel">🖨 Print label (actual size)</button>
+          <label class="inline">×<input type="number" id="prCopies" value="1" min="1" max="60" style="width:60px"></label>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Graded slab</h3>
+        <div class="canvas-wrap slab"><canvas id="slabCv"></canvas></div>
+        <p class="muted small" id="stDims"></p>
+        <div class="row wrap">
+          <button class="btn" id="dlSlabPng">⬇ Slab PNG (transparent)</button>
+          <button class="btn" id="dlSlabJpg">⬇ Slab JPG</button>
+          <button class="btn" id="prSlab">🖨 Print slab</button>
+        </div>
+        <h3>Slab + all card info</h3>
+        <div class="row wrap">
+          <select id="sheetFmt"><option value="pdf">PDF</option><option value="png">PNG</option><option value="jpg">JPG</option><option value="webp">WebP</option></select>
+          <button class="btn primary" id="dlSheet">⬇ Download slab + info sheet</button>
+        </div>
+        <p class="muted small">When printing, set the scale to <b>100% / Actual size</b> so the label comes out at its real dimensions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BRAND ============ -->
+<section id="page-brand" class="page">
+  <div class="split">
+    <div class="panel">
+      <h3>Your grading brand</h3>
+      <div class="form">
+        <label class="lab">Brand name<input id="b_name"></label>
+        <label class="lab">Tagline<input id="b_tag"></label>
+        <label class="lab">Primary colour (grade box)<input type="color" id="b_c1"></label>
+        <label class="lab">Accent colour (stripe, bars)<input type="color" id="b_c3"></label>
+        <label class="lab">Dark / text colour (reports)<input type="color" id="b_c2"></label>
+        <label class="lab">Label background<input type="color" id="b_lbg"></label>
+        <label class="lab">Label text<input type="color" id="b_lfg"></label>
+        <label class="lab">Font<select id="b_font"></select></label>
+      </div>
+      <div class="row wrap">
+        <label class="btn">Upload logo…<input type="file" id="b_logo" accept="image/*" hidden></label><button class="btn" id="b_logoClear">Remove logo</button>
+        <label class="btn">Upload font…<input type="file" id="b_fontFile" accept=".ttf,.otf,.woff,.woff2" hidden></label><button class="btn" id="b_fontClear">Remove font</button>
+        <button class="btn danger" id="b_reset">Reset brand</button>
+      </div>
+      <p class="muted small">A transparent PNG or SVG logo works best. Everything is stored only in this browser.</p>
+    </div>
+    <div class="panel sticky">
+      <h3>Preview</h3>
+      <div class="canvas-wrap"><canvas id="brandCv"></canvas></div>
+      <div class="canvas-wrap slab"><canvas id="brandSlabCv"></canvas></div>
+      <p class="muted small" id="brandDims"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section id="page-settings" class="page">
+  <div class="split">
+    <div class="panel">
+      <h3>Slab &amp; label dimensions (inches)</h3>
+      <p class="muted small">Defaults approximate a standard graded-card slab. Measure yours and adjust so printed labels fit exactly.</p>
+      <div class="form">
+        <label class="lab">Slab width<input id="sp_slabW" type="number" step="0.01"></label>
+        <label class="lab">Slab height<input id="sp_slabH" type="number" step="0.01"></label>
+        <label class="lab">Label width<input id="sp_labelW" type="number" step="0.01"></label>
+        <label class="lab">Label height<input id="sp_labelH" type="number" step="0.01"></label>
+        <label class="lab">Card window width<input id="sp_cardW" type="number" step="0.01"></label>
+        <label class="lab">Card window height<input id="sp_cardH" type="number" step="0.01"></label>
+      </div>
+      <button class="btn" id="sp_reset">Reset to defaults</button>
+    </div>
+    <div class="panel">
+      <h3>Your data</h3>
+      <p class="muted">No account, no server. Cards, images and settings live in this browser (localStorage + IndexedDB). Clearing site data deletes them – so back up now and then.</p>
+      <p id="storageInfo" class="muted small"></p>
+      <div class="row wrap">
+        <button class="btn primary" id="bkExport">⬇ Export full backup (.json)</button>
+        <label class="btn">Restore backup…<input type="file" id="bkImport" accept=".json" hidden></label>
+        <button class="btn danger" id="wipe">Erase everything</button>
+      </div>
+      <h3>How it works</h3>
+      <ul class="muted small">
+        <li><b>Card info</b>: Pokémon (pokemontcg.io), Magic (Scryfall), Yu-Gi-Oh! (YGOPRODeck) – free public databases, called straight from your browser. Sports cards are entered by hand.</li>
+        <li><b>OCR</b>: Tesseract.js runs in your browser to read the name/number off scans.</li>
+        <li><b>Grades</b> are an automated estimate of centering, corners, edges and surface. They are not official PSA/BGS/SGC grades.</li>
+        <li><b>eBay / CollX</b>: they don't allow posting from a no-server site, so the app builds the full listing and opens their listing page.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+</main>
+
+<div id="toasts"></div>
+<div id="printArea"></div>
+
+<script src="js/util.js"></script>
+<script src="js/db.js"></script>
+<script src="js/image.js"></script>
+<script src="js/lookup.js"></script>
+<script src="js/ocr.js"></script>
+<script src="js/grade.js"></script>
+<script src="js/slab.js"></script>
+<script src="js/cardops.js"></script>
+<script src="js/scan.js"></script>
+<script src="js/collection.js"></script>
+<script src="js/studio.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
