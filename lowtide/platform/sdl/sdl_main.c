@@ -115,6 +115,8 @@ static void touch_recalc(void) {
 typedef struct { int frame; u8 mask; } KeyEv;
 static KeyEv *kev; static int nkev;
 static struct { int frame; char path[256]; } shots[64]; static int nshots;
+static int dbg_map = -1, dbg_x, dbg_y, dbg_d, dbg_n;
+static u8 dbg_idx[64], dbg_val[64];
 static int max_frames = -1, cur_frame, dumpstate;
 static int scale_out = 1;
 
@@ -220,6 +222,8 @@ static void usage_parse(int argc, char **argv) {
     int i;
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--headless")) headless = 1;
+        else if (!strcmp(argv[i], "--warp") && i + 4 < argc) { dbg_map = atoi(argv[++i]); dbg_x = atoi(argv[++i]); dbg_y = atoi(argv[++i]); dbg_d = atoi(argv[++i]); }
+        else if (!strcmp(argv[i], "--var") && i + 1 < argc && dbg_n < 64) { int a, b; if (sscanf(argv[++i], "%d=%d", &a, &b) == 2) { dbg_idx[dbg_n] = (u8)a; dbg_val[dbg_n++] = (u8)b; } }
         else if (!strcmp(argv[i], "--dmg")) soft_set_dmg(1);
         else if (!strcmp(argv[i], "--frames") && i + 1 < argc) max_frames = atoi(argv[++i]);
         else if (!strcmp(argv[i], "--sav") && i + 1 < argc) snprintf(savepath, sizeof savepath, "%s", argv[++i]);
@@ -268,7 +272,7 @@ int main(int argc, char **argv) {
     usage_parse(argc, argv);
     plat_init();
     core_init();
-    if (adev == 0 && !headless) {}
+    if (dbg_map >= 0) game_debug_apply((u8)dbg_map, (u8)dbg_x, (u8)dbg_y, (u8)dbg_d, (u8)dbg_n, dbg_idx, dbg_val);
     lastt = SDL_GetPerformanceCounter();
     while (running) {
         if (headless) { frame_step(); continue; }

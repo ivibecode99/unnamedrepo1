@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 python3 tools/build_data.py
 OUT=build/gba; mkdir -p $OUT
 CC=arm-none-eabi-gcc
-FL="-mcpu=arm7tdmi -mthumb -Os -ffunction-sections -fdata-sections -fno-strict-aliasing -std=gnu99 -Icore -DPLATFORM_GBA -Wall -Wno-unused-function"
+FL="-mcpu=arm7tdmi -mthumb -Os -ffunction-sections -fdata-sections -fno-strict-aliasing -std=gnu99 -Icore -DPLATFORM_GBA $EXTRA -Wall -Wno-unused-function"
 $CC -mcpu=arm7tdmi -marm -c platform/gba/crt0.s -o $OUT/crt0.o
 $CC $FL -c platform/gba/main_gba.c -o $OUT/main.o
 objs="$OUT/crt0.o $OUT/main.o"

@@ -55,6 +55,13 @@ u8 str_len(const u8 *s) API;
 /* text / UI (window layer) */
 void ui_init(void) API;
 void ui_clear_win(void) API;
+void ui_win(u8 y) API;
+extern u8 ui_win_y, ui_say_open_y, ui_say_close_y;
+u16 world_take_script(void) API;
+u16 world_take_battle(void) API;
+u16 world_cur_chunk(void) API;
+void world_restore(void) API;
+void world_player_pos(u8 *x, u8 *y) API;
 void ui_print(u8 x, u8 y, const u8 *s) API;          /* window layer */
 void ui_print_bg(u8 x, u8 y, const u8 *s) API;       /* BG layer */
 void ui_num(u8 x, u8 y, u16 v, u8 digits) API;
@@ -150,4 +157,14 @@ void game_start_new(void) API;
 void game_continue(void) API;
 void game_play_frame(void) API;
 void game_title(void) API;
+void recalc_stats(void) API;
+void game_debug_apply(u8 map, u8 x, u8 y, u8 d, u8 n, const u8 *idx, const u8 *val) API;
+void game_options_open(void) API;
+void item_name_print(u8 x, u8 y, u8 id) API;
+u8 vm_running_ctx(u8 c) API;
+u8 vm_fullscreen(void) API;
+void vm_set_chunk(u16 c) API;
+u16 vm_get_chunk(void) API;
+void vm_stop(void) API;
+void play_start_map(u8 map, u8 x, u8 y, u8 d) API;
 #endif

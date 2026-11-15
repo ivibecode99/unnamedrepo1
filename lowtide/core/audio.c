@@ -64,7 +64,7 @@ static u8 step_voice(u8 ch, Voice *v, const u8 *base, u8 is_sfx, u8 muted) {
             u8 len = base[v->pc++];
             v->timer = len ? len : 1;
             v->note = c;
-            if (!muted) {
+            if (!muted && c != 0x7F) {
                 if (c == 0) { plat_snd_off(ch); v->vp = 0; }
                 else { voice_trig(ch, v, c); v->vp = 0; }
             }

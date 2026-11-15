@@ -7,8 +7,8 @@
 #define T_ACTOR 152    /* 6 actors x 4 tiles (152..175) */
 #define T_FACE 176     /* 16 tiles (176..191) */
 #define T_MAP 192      /* 64 tiles (192..255) */
-#define T_BSPR 112     /* battle sprites: 16 tiles (112..127) */
-#define T_ENEMY 128    /* battle enemy art up to 128 tiles */
+#define T_BSPR 117     /* battle sprites: 16 tiles (117..132) */
+#define T_ENEMY 133    /* battle enemy art up to 96 tiles (133..228) */
 #define MAP_TILES 64
 /* UI tile offsets from T_UI */
 #define UI_TL 0
@@ -32,8 +32,8 @@
 #define P_BULLET 14
 #define P_SOUL 15
 /* sizes */
-#define SCENE_MAX 2560
-#define MUSIC_MAX 1536
+#define SCENE_MAX 2304
+#define MUSIC_MAX 800
 #define SCRATCH_MAX 640
 #define MAXBUL_GB 16
 #define MAXBUL_BIG 48
@@ -49,6 +49,8 @@
 #define CH_BSPR 7
 #define CH_PLAYER 8
 #define CH_TITLE 9
+#define CH_CREDITS 10
+#define CH_MAPS 11
 #define CH_SONG 16     /* + song id, up to 48 songs */
 #define CH_SFX 64      /* + sfx id (single chunk holds all sfx -> CH_SFX) */
 #define CH_CONTENT 80
@@ -71,3 +73,52 @@
 #define V_BOSSKILLS 22
 #define V_BOSSSPARES 23
 #define V_USER 32
+
+/* map chunk header offsets */
+#define MH_W 0
+#define MH_H 1
+#define MH_TILES 2
+#define MH_META 4
+#define MH_PAL 6
+#define MH_MUSIC 8
+#define MH_ENC 9
+#define MH_RATE 10
+#define MH_FLAGS 11
+#define MH_DMGBG 12
+#define MH_DMGOBJ 13
+#define MH_NENT 14
+#define MH_NPLATE 15
+#define MH_ACTORS 16
+#define MH_ENTER 28
+#define MH_PLATEVAR 30
+#define MH_SIZE 31
+#define ENT_SZ 10
+/* entity kinds */
+#define EK_NPC 0
+#define EK_SPOT 1
+#define EK_BLOCK 2
+#define EK_CHEST 3
+#define EK_SAVE 4
+#define EK_ENEMY 5
+#define EK_ZONE 6
+#define EK_DOOR 7
+/* battle chunk header */
+#define BH_GFX 0
+#define BH_MUSIC 2
+#define BH_FLAGS 3
+#define BH_HP 4
+#define BH_ATK 6
+#define BH_EXP 7
+#define BH_GOLD 8
+#define BH_NPAT 10
+#define BH_NLISTEN 11
+#define BH_NAME 12
+#define BH_PAT 24
+#define BH_INTRO 26
+#define BH_TURN 28
+#define BH_WIN 30
+#define BH_SPARED 32
+#define BH_REFUSE 34
+#define BH_FLEE 36
+#define BH_LISTEN 38
+#define BH_SIZE 110

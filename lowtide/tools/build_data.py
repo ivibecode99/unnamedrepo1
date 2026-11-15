@@ -32,17 +32,27 @@ def build_strings(ch):
         for i, (n, _) in enumerate(UI_STRINGS): f.write(f'#define {n} {i}\n')
 
 def main():
+    sys.path.insert(0, os.path.join(ROOT, 'content'))
     out = os.path.join(ROOT, 'build', 'gen'); os.makedirs(out, exist_ok=True)
     ch = CHK.Chunks()
+    import songs, music
+    from lib import E
+    for i, sg in enumerate(songs.SONGS): E.songs[sg.name] = i
+    for n, i in songs.SFX_ID.items(): E.sfx[n] = i
+    import story
+    from world import W
     build_strings(ch)
     art_basic.build(ch)
-    # placeholder fixed chunks (filled by later modules)
-    for name in ('CH_SPEAKERS', 'CH_ITEMS', 'CH_SHOPS', 'CH_ENC', 'CH_PLAYER', 'CH_SFX'):
-        if CHK.LAYOUT[name] not in ch.d:
-            try: mod = __import__('content_' + name.lower())
-            except ImportError: ch.fixed(CHK.LAYOUT[name], b'\0\0\0\0', name)
+    for i, sg in enumerate(songs.SONGS):
+        data, _ = music.compile_song(sg)
+        ch.fixed(CHK.LAYOUT['CH_SONG'] + i, data, 'song_' + sg.name)
+    ch.fixed(CHK.LAYOUT['CH_SFX'], songs.sfx_bytes(), 'sfx')
+    W.build(ch)
     blob = ch.blob()
     open(os.path.join(out, 'blob.bin'), 'wb').write(blob)
     ch.emit_c(os.path.join(out, 'blob.c'), blob)
-    print(f'chunks: {len(ch.d)}  blob: {len(blob)} bytes')
+    import json; json.dump({'vars': E.vars, 'maps': E.maps, 'items': E.items, 'battles': E.battle_ids, 'songs': E.songs}, open(os.path.join(out, 'names.json'), 'w'), indent=0)
+    print(f'chunks: {len(ch.d)}  blob: {len(blob)} bytes  maps: {len(W.maps)}  battles: {len(W.battles)}')
+    for n, sz in sorted(getattr(W, 'msize', {}).items(), key=lambda kv: -kv[1])[:3]: print('  biggest map', n, sz)
+    for n, sz in sorted(getattr(W, 'bsize', {}).items(), key=lambda kv: -kv[1])[:3]: print('  biggest battle', n, sz)
 if __name__ == '__main__': main()

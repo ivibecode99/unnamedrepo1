@@ -4,8 +4,8 @@
 #include "lt.h"
 /* Text rendering on the window/BG layers and the typewriter dialogue box. */
 
-static u8 uistr[1000];
-static u16 uioff[100];
+static u8 uistr[800];
+static u16 uioff[96];
 static u8 uicount;
 
 void ui_init(void) API {
@@ -18,6 +18,8 @@ void ui_init(void) API {
 }
 const u8 *ui_str(u8 id) API { return id < uicount ? uistr + uioff[id] : (const u8 *)""; }
 
+u8 ui_win_y = 144, ui_say_open_y = 96, ui_say_close_y = 144;
+void ui_win(u8 y) API { ui_win_y = y; plat_win_y(y); }
 void ui_clear_win(void) API { plat_win_fill(0, 0, 32, 32, T_BLACK, P_UI); }
 
 static u8 glyph(u8 c) { return (c >= 32 && c < 127) ? (u8)(T_FONT + c - 32) : T_FONT; }
@@ -57,7 +59,7 @@ void ui_box_bg(u8 x, u8 y, u8 w, u8 h) API { box_gen(x, y, w, h, 1); }
 #define ST_TYPE 1
 #define ST_PAGE 2
 #define ST_END 3
-static const u8 *sp;
+static const u8 *sp, *inj;
 static u8 sx, sy, sstate, stimer, sx0, swidth, sface, spk_blip, rush, spk_id, sarrow, semo;
 static u16 sface_ch;
 
@@ -88,17 +90,19 @@ void ui_say_begin(u8 spk, u8 emo) API {
     sx0 = sface ? 6 : 1; swidth = sface ? 13 : 18;
     ui_box(0, 0, 20, 6);
     say_clear_text();
-    plat_win_y(96);
+    ui_win(ui_say_open_y);
     sstate = ST_IDLE; semo = emo;
 }
-void ui_say_text(const u8 *txt) API { sp = txt; sstate = ST_TYPE; stimer = 0; rush = 0; plat_win_set(18, 4, T_BLACK, P_UI); }
+void ui_say_text(const u8 *txt) API { sp = txt; inj = 0; sstate = ST_TYPE; stimer = 0; rush = 0; plat_win_set(18, 4, T_BLACK, P_UI); }
 static u8 tdelay(void) { switch (meta.text_speed) { case 0: return 0; case 1: return 1; case 3: return 3; default: return 2; } }
 u8 ui_say_tick(void) API {
     if (sstate == ST_TYPE) {
         if (g_pressed & (K_A | K_B)) rush = 1;
         if (stimer) { stimer--; if (!rush) return 0; stimer = 0; }
         for (;;) {
-            u8 c = *sp;
+            u8 c;
+            if (inj) { c = *inj; if (!c) { inj = 0; continue; } inj++; if (c != ' ') audio_blip(spk_blip); plat_win_set(sx++, sy, glyph(c), P_UI); if (!rush && tdelay()) { stimer = (u8)(tdelay() - 1); return 0; } continue; }
+            c = *sp;
             if (c == 0) { sstate = ST_END; sarrow = 0; return 0; }
             sp++;
             if (c == 0x0A) { sy++; sx = sx0; continue; }
@@ -106,6 +110,7 @@ u8 ui_say_tick(void) API {
             if (c == 0x01) { if (!rush) { stimer = 10; return 0; } continue; }
             if (c == 0x02) { if (!rush) { stimer = 28; return 0; } continue; }
             if (c == 0x03) { semo = *sp++; face_load(semo); continue; }
+            if (c == 0x04) { inj = g.name; continue; }
             plat_win_set(sx++, sy, glyph(c), P_UI);
             if (c != ' ' && (sx & 1)) audio_blip(spk_blip);
             if (!rush && tdelay()) { stimer = (u8)(tdelay() - 1); return 0; }
@@ -123,4 +128,4 @@ u8 ui_say_tick(void) API {
     }
     return 0;
 }
-void ui_say_end(void) API { plat_win_y(144); }
+void ui_say_end(void) API { ui_win(ui_say_close_y); }

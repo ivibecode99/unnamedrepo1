@@ -28,7 +28,7 @@ void fx_tick(void) API {
 }
 
 /* ---------- common list drawing ---------- */
-static void win_open(u8 y) { ui_clear_win(); plat_win_y(y); }
+static void win_open(u8 y) { ui_clear_win(); ui_win(y); }
 
 /* ---------- title ---------- */
 static void title_draw_map(void) {
@@ -71,7 +71,7 @@ static void title_draw_map(void) {
     for (i = 0; i < 40; i++) plat_spr(i, 0, 200, 0, 0);
     plat_scroll(0, 0);
     ui_clear_win();
-    plat_win_y(144);
+    ui_win(144);
     set_dmg(0xE4, 0xE4, 0xE4);
     plat_lcd(1);
 }
@@ -100,14 +100,14 @@ static void title_tick(void) {
     if (tstate == 0) {
         if ((frame_ctr & 32) == 0) ui_print_bg(4, 14, ui_str(S_PRESS));
         else plat_bg_fill(4, 14, 11, 1, T_BLACK, P_UI);
-        if (g_pressed & (K_START | K_A)) { audio_sfx(1); tstate = 1; title_menu_draw(); plat_win_y(80); }
+        if (g_pressed & (K_START | K_A)) { audio_sfx(1); tstate = 1; title_menu_draw(); ui_win(80); }
         return;
     }
     if (tstate == 1) {
         for (i = 0; i < 3; i++) plat_win_set(5, (u8)(2 + i * 2), i == tcur ? (u8)(T_UI + UI_CURSOR) : T_BLACK, P_UI);
         if (g_pressed & K_UP) { tcur = tcur ? (u8)(tcur - 1) : 2; audio_sfx(0); }
         if (g_pressed & K_DOWN) { tcur = tcur < 2 ? (u8)(tcur + 1) : 0; audio_sfx(0); }
-        if (g_pressed & K_B) { tstate = 0; plat_win_y(144); }
+        if (g_pressed & K_B) { tstate = 0; ui_win(144); }
         if (g_pressed & K_A) {
             audio_sfx(1);
             if (tcur == 2) { mode = M_OPTIONS; opt_cur = 0; opt_remap = 255; opt_from = 0; win_open(0); options_draw(); }
@@ -143,6 +143,8 @@ static void remap_draw(void) {
     /* simple listing: show whether a custom key set */
     for (i = 0; i < 8; i++) if (meta.keymap[i]) ui_num(15, (u8)(3 + i + (i > 3)), meta.keymap[i], 3);
 }
+void game_options_open(void) API { mode = M_OPTIONS; opt_cur = 0; opt_remap = 255; opt_from = M_PLAY; win_open(0); options_draw(); }
+static void options_leave(void) { meta_save(); win_open(144); if (opt_from == M_PLAY) { mode = M_PLAY; } else { mode = M_TITLE; tstate = 1; ui_win(80); title_menu_draw(); } }
 static void options_tick(void) {
     u8 ncount = (plat_caps() & PC_REMAP) ? 6 : 5, last = (u8)(ncount - 1);
     if (opt_remap < 8) { /* capturing */
@@ -174,11 +176,11 @@ static void options_tick(void) {
         else if (opt_cur == 2) meta.assist ^= 1;
         else if (opt_cur == 3) { if (d > 0 && meta.vol < 8) meta.vol++; else if (d < 0 && meta.vol > 0) meta.vol--; }
         else if (opt_cur == 4 && ncount == 6) { if (g_pressed & K_A) { opt_remap = 100; slot_cur = 0; remap_draw(); return; } }
-        else if (opt_cur == last && (g_pressed & K_A)) { meta_save(); win_open(144); if (opt_from == 0) { mode = M_TITLE; tstate = 1; plat_win_y(80); title_menu_draw(); } else { mode = opt_from; } return; }
+        else if (opt_cur == last && (g_pressed & K_A)) { options_leave(); return; }
         audio_sfx(0);
         options_draw();
     }
-    if (g_pressed & K_B) { meta_save(); mode = M_TITLE; tstate = 1; title_menu_draw(); plat_win_y(80); }
+    if (g_pressed & K_B) { options_leave(); }
 }
 
 /* ---------- slots (continue) ---------- */
@@ -198,9 +200,9 @@ static void slots_draw(void) {
 static void slots_tick(void) {
     if (g_pressed & K_UP) { slot_cur = slot_cur ? (u8)(slot_cur - 1) : 3; audio_sfx(0); slots_draw(); }
     if (g_pressed & K_DOWN) { slot_cur = slot_cur < 3 ? (u8)(slot_cur + 1) : 0; audio_sfx(0); slots_draw(); }
-    if (g_pressed & K_B) { mode = M_TITLE; tstate = 1; title_menu_draw(); plat_win_y(80); }
+    if (g_pressed & K_B) { mode = M_TITLE; tstate = 1; title_menu_draw(); ui_win(80); }
     if (g_pressed & K_A) {
-        if (slot_cur == 3) { mode = M_TITLE; tstate = 1; title_menu_draw(); plat_win_y(80); return; }
+        if (slot_cur == 3) { mode = M_TITLE; tstate = 1; title_menu_draw(); ui_win(80); return; }
         if (save_slot_used(slot_cur) && save_read(slot_cur)) { audio_sfx(1); game_continue(); }
         else audio_sfx(14);
     }
@@ -213,6 +215,9 @@ void core_init(void) API {
     rnd_seed(0x1234);
     game_init();
     title_init();
+#ifdef LT_BOOT_MAP
+    game_debug_apply(LT_BOOT_MAP, LT_BOOT_X, LT_BOOT_Y, LT_BOOT_D, 0, 0, 0);
+#endif
 }
 void game_title(void) API { title_init(); }
 void core_frame(void) API {
