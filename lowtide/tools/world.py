@@ -51,7 +51,11 @@ class World:
                 pal = b.get('pal', ['#F4EBD0', '#9AA0B0', '#4C4A68', '#0C0B14'])
                 data, _ = AC.enemy_chunk(g, pal)
                 self.gfx_ch[g] = ch.add(data, 'gfx_' + g)
-        for name, ext in getattr(self, 'extra_gfx', {}).items(): pass
+        for b in self.battles:
+            for g in b.get('extra_gfx', []):
+                if g not in self.gfx_ch:
+                    data, _ = AC.enemy_chunk(g, b.get('pal', ['#F4EBD0', '#9AA0B0', '#4C4A68', '#0C0B14']))
+                    self.gfx_ch[g] = ch.add(data, 'gfx_' + g)
         # compile
         for n, text in self.scenes:
             sc = Script(text, E, name='scene ' + n)
@@ -137,7 +141,38 @@ class World:
         assert len(data) <= lib.L['SCENE_MAX'], (name, len(data))
         ch.set(E.battle_ids[name], data)
         self.bsize = getattr(self, 'bsize', {}); self.bsize[name] = len(data)
+    def check_map(self, m):
+        ts = self.tilesets[m['ts']]; rows = m['rows']; h = len(rows); w = len(rows[0])
+        def solid(x, y): return not (0 <= x < w and 0 <= y < h) or bool(ts.defs[rows[y][x]][3] & 1)
+        errs = []
+        pts = []
+        for e in m['ents']:
+            if e['k'] in (6,) :
+                for dx in range(e['w']):
+                    for dy in range(e['h']): pts.append((e['x'] + dx, e['y'] + dy, e['id']))
+            else: pts.append((e['x'], e['y'], e['id']))
+        for x, y, i in pts:
+            if not (0 <= x < w and 0 <= y < h): errs.append(f'{i} out of map'); continue
+            if solid(x, y) and not any(e['id'] == i and e['k'] in (1,) for e in m['ents']): errs.append(f'entity {i} on solid tile {rows[y][x]!r} at {x},{y}')
+        # reachability from first exit-ish walkable tile
+        start = None
+        for x, y, i in pts:
+            if 0 <= x < w and 0 <= y < h and not solid(x, y): start = (x, y); break
+        if start:
+            seen = {start}; st = [start]
+            while st:
+                x, y = st.pop()
+                for dx, dy in ((1,0),(-1,0),(0,1),(0,-1)):
+                    n = (x+dx, y+dy)
+                    if n not in seen and not solid(*n): seen.add(n); st.append(n)
+            for x, y, i in pts:
+                if (x, y) in seen: continue
+                # NPC/spot may be adjacent to reachable
+                if any((x+dx, y+dy) in seen for dx, dy in ((1,0),(-1,0),(0,1),(0,-1))): continue
+                errs.append(f'entity {i} unreachable at {x},{y}')
+        if errs: print('MAP WARN', m['name'], '; '.join(errs))
     def compile_map(self, ch, m):
+        self.check_map(m)
         ts = self.tilesets[m['ts']]; rows = m['rows']; h = len(rows); w = len(rows[0])
         assert w <= 16 and h <= 16 and all(len(r) == w for r in rows), (m['name'], w, h)
         tiles = bytearray()
@@ -156,10 +191,39 @@ class World:
         for e in ents:
             if 'exit' in e:
                 to, tx, ty, d = e['exit']; extra += f"\n:__exit_{e['id']}\nwarp {to} {tx} {ty} {d}\nend"
-        sc = Script(m['script'] + extra, E, ents=ent_idx, name='map ' + m['name'])
         nplate = len(m['plates'])
         base = lib.L['MH_SIZE'] + w * h + len(ents) * lib.L['ENT_SZ'] + 2 * nplate
-        code, labs = sc.link(base, {})
+        script_text = m['script'] + extra
+        entry = {e['label'] for e in ents if e.get('label')} | {'enter'}
+        spilled = 0
+        while True:
+            sc = Script(script_text, E, ents=ent_idx, name='map ' + m['name'])
+            code, labs = sc.link(base, {})
+            if base + len(code) <= lib.L['SCENE_MAX']: break
+            # split into entry groups and spill the biggest movable one into a scene chunk
+            lines = script_text.split('\n'); groups = []; cur = None
+            for ln in lines:
+                if ln.startswith(':') and ln[1:].strip() in entry:
+                    cur = [ln[1:].strip(), [ln]]; groups.append(cur)
+                elif cur is not None: cur[1].append(ln)
+            best = None; bestsz = 0
+            for name, gl in groups:
+                if name == 'enter' or name.startswith('__') or len(gl) < 3 or 'chunk __' in '\n'.join(gl[:3]): continue
+                txt = '\n'.join(gl)
+                try: sz = len(Script(txt, E, ents=ent_idx, name='probe').b)
+                except SystemExit: continue
+                if sz > bestsz and sz > 40: best, bestsz = (name, gl), sz
+            if not best: raise SystemExit(f"map {m['name']} too big: {base + len(code)} and nothing to spill")
+            name, gl = best
+            sname = f"{m['name']}__{name}"
+            cid = ch.reserve('scene_' + sname); E.scene_ids[sname] = cid
+            body = '\n'.join(gl)
+            sc2 = Script(body, E, ents=ent_idx, name='scene ' + sname)
+            c2, _ = sc2.link(0, {})
+            assert len(c2) <= lib.L['SCENE_MAX'], (sname, len(c2))
+            ch.set(cid, c2)
+            script_text = script_text.replace(body, f':{name}\nchunk {sname}\nend')
+            spilled += 1
         hdr = bytearray(lib.L['MH_SIZE'])
         tch, mch, pch = self.ts_ch[m['ts']]
         hdr[0] = w; hdr[1] = h

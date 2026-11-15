@@ -73,7 +73,7 @@ end
 
 W.mapdef('shore2', 'shore', [
  "################",
- "#######DD#######",
+ "#######..#######",
  "#......,,......#",
  "#.r............#",
  "#..........r...#",
@@ -83,7 +83,7 @@ W.mapdef('shore2', 'shore', [
  "#..............#",
  "#.....,,.....l.#",
  "#..............#",
- "################"], 'shore',
+ "#######..#######"], 'shore',
  ents=[ENEMY('crab', 'crabfolk', 7, 5, 'crab_fight', ngate='crab_done'), SAVE('post', 13, 8), DOOR('gate', 7, 1, ngate='crab_done'), DOOR('gate2', 8, 1, ngate='crab_done'),
        EXIT('toreef', 7, 1, 2, 1, 'coral_square', 8, 12, 'up', gate='crab_done'), EXIT('toshore1', 7, 11, 2, 1, 'shore1', 7, 10, 'up'),
        SPOT('sign', 3, 3, 'sign_talk')],

@@ -180,6 +180,7 @@ void vm_tick(void) API {
         case 0x39: { u8 m = S[v->ip]; u16 t = rd16(S + v->ip + 1); v->ip += 3; if (meta.endings & m) v->ip = t; } break;
         case 0x3A: world_mode_flag = S[v->ip++]; break;
         case 0x3B: battle_cmd(0x3B, S[v->ip++], 0); break;
+        case 0x3D: { u8 n = S[v->ip]; u16 t = rd16(S + v->ip + 1); v->ip += 3; if (g.gold >= n) v->ip = t; } break;
         case 0x3C: g.vars[S[v->ip]] = (u8)(g.vars[S[v->ip]] + 1 > 255 ? 255 : g.vars[S[v->ip]] + 1); v->ip++; break;
         default: v->active = 0; return;
         }

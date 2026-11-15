@@ -173,6 +173,8 @@ class Script:
         elif c == 'meta': b += bytes([0x38, int(a[0])])
         elif c == 'ifmeta':
             gi = a.index('goto'); b += bytes([0x39, int(a[0])]); self.u16ref(a[gi + 1])
+        elif c == 'ifgold':
+            gi = a.index('goto'); b += bytes([0x3D, int(a[0])]); self.u16ref(a[gi + 1])
         elif c == 'lock': b += bytes([0x3A, int(a[0])])
         elif c == 'bflag': b += bytes([0x3B, int(a[0])])
         else: raise ValueError('unknown command ' + c)
