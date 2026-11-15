@@ -5,3 +5,9 @@ build/
 dist/
 .DS_Store
 *.tmp
+pocket/gba/build/
+pocket/gba/*.elf
+pocket/gba/*.map
+pocket/gba/*.gba
+pocket/gba/bn_ofiles.txt
+pocket/gb/build/

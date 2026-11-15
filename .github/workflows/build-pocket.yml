@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Fetch Butano
-        run: git clone --depth 1 https://github.com/GValiente/butano.git /opt/butano
+        run: git clone https://github.com/GValiente/butano.git /opt/butano && git -C /opt/butano checkout 67afc034335e2aa873091c6da20d9568984b8d0b
       - name: Build GBA ROM
         run: make -C pocket/gba -j2 LIBBUTANO=/opt/butano/butano
       - uses: actions/upload-artifact@v4
