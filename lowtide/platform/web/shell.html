@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>LOWTIDE</title>
+<style>
+:root{color-scheme:dark}
+html,body{margin:0;height:100%;background:#0c0b14;color:#f4ebd0;font:14px/1.4 ui-monospace,Menlo,Consolas,monospace;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+#wrap{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+canvas{image-rendering:pixelated;image-rendering:crisp-edges;background:#000}
+#start{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#0c0b14;z-index:5;cursor:pointer;text-align:center;padding:16px}
+#start h1{font-size:34px;letter-spacing:6px;margin:0;color:#f2a33c}
+#start p{margin:0;opacity:.8}
+#pad{position:fixed;left:0;right:0;bottom:0;height:34vmin;display:none;z-index:3;pointer-events:none}
+.touch #pad{display:block}
+#pad div{position:absolute;pointer-events:auto;background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.35);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#f4ebd0}
+#pad div.on{background:rgba(242,163,60,.5)}
+#hint{position:fixed;top:6px;right:8px;font-size:11px;opacity:.55;z-index:4}
+</style></head>
+<body>
+<div id="wrap"><canvas id="screen" width="160" height="144"></canvas></div>
+<div id="start"><h1>LOWTIDE</h1><p>click, tap or press any key to begin</p><p style="font-size:12px;opacity:.6">arrows/WASD move · Z or Space = A · X = B · Enter = Start · Shift = Select · gamepad &amp; touch supported</p></div>
+<div id="pad"></div><div id="hint">F = fullscreen</div>
+<script>
+(function(){
+var canvas=document.getElementById('screen');
+window.ltCtx=canvas.getContext('2d');window.ltImg=window.ltCtx.createImageData(160,144);
+window.ltKeys=0;window.ltRemap=-1;window.ltKeymapSet=[0,0,0,0,0,0,0,0];
+var DEF={ArrowUp:0,KeyW:0,ArrowDown:1,KeyS:1,ArrowLeft:2,KeyA:2,ArrowRight:3,KeyD:3,KeyZ:4,Space:4,KeyX:5,Backspace:5,Enter:6,KeyC:6,ShiftRight:7,ShiftLeft:7,KeyV:7};
+var custom={};try{custom=JSON.parse(localStorage.getItem('lowtide_keymap')||'{}');}catch(e){}
+var kb=0,pad=0,touch=0;
+function bit(i){return 1<<i;}
+function recalc(){window.ltKeys=kb|pad|touch;}
+function codeToBtn(c){for(var b in custom){if(custom[b]===c)return +b;}return (c in DEF)?DEF[c]:-1;}
+for(var b in custom){window.ltKeymapSet[+b]=1+(custom[b].length*7+custom[b].charCodeAt(custom[b].length-1))%200;}
+var started=false,actx=null,node=null;
+function startAudio(){
+  if(started)return;started=true;document.getElementById('start').style.display='none';
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext;actx=new AC();
+    node=actx.createScriptProcessor(2048,0,2);
+    var ptr=0;
+    node.onaudioprocess=function(e){
+      var n=e.outputBuffer.length;if(!ptr||ptr.n<n){if(ptr)Module._free(ptr.p);ptr={p:Module._malloc(n*4),n:n};}
+      Module._web_audio_fill(ptr.p,n,actx.sampleRate);
+      var f=new Float32Array(Module.HEAPU8.buffer,ptr.p,n);
+      e.outputBuffer.getChannelData(0).set(f);e.outputBuffer.getChannelData(1).set(f);
+    };
+    node.connect(actx.destination);if(actx.state==='suspended')actx.resume();
+  }catch(err){console.log('audio unavailable',err);}
+}
+document.getElementById('start').addEventListener('pointerdown',startAudio);
+addEventListener('keydown',function(e){
+  if(window.ltRemap>=0){if(e.code!=='Escape'){var rb=window.ltRemap;for(var k in custom)if(custom[k]===e.code||+k===rb)delete custom[k];custom[rb]=e.code;
+      window.ltKeymapSet[rb]=1+(e.code.length*7+e.code.charCodeAt(e.code.length-1))%200;try{localStorage.setItem('lowtide_keymap',JSON.stringify(custom));}catch(x){}}
+    window.ltRemap=-1;e.preventDefault();return;}
+  startAudio();
+  if(e.code==='KeyF'&&!e.repeat){var el=document.documentElement;(document.fullscreenElement?document.exitFullscreen():el.requestFullscreen&&el.requestFullscreen());}
+  var b=codeToBtn(e.code);if(b>=0){kb|=bit(b);recalc();e.preventDefault();}
+});
+addEventListener('keyup',function(e){var b=codeToBtn(e.code);if(b>=0){kb&=~bit(b);recalc();e.preventDefault();}});
+addEventListener('blur',function(){kb=0;recalc();});
+/* gamepad */
+function pollPad(){
+  var gps=navigator.getGamepads?navigator.getGamepads():[];var m=0;
+  for(var i=0;i<gps.length;i++){var g=gps[i];if(!g)continue;
+    var B=function(n){return g.buttons[n]&&g.buttons[n].pressed;};
+    if(B(12)||g.axes[1]<-.5)m|=1;if(B(13)||g.axes[1]>.5)m|=2;if(B(14)||g.axes[0]<-.5)m|=4;if(B(15)||g.axes[0]>.5)m|=8;
+    if(B(0))m|=16;if(B(1)||B(2))m|=32;if(B(9))m|=64;if(B(8))m|=128;
+  }
+  if(m&&!started){}
+  pad=m;recalc();requestAnimationFrame(pollPad);
+}
+requestAnimationFrame(pollPad);
+/* touch pad */
+var layout=[['U',1,'▲',6,44,16,22],['D',2,'▼',6,80,16,22],['L',4,'◀',-8,62,16,22],['R',8,'▶',20,62,16,22],['A',16,'A',74,56,22,26],['B',32,'B',56,70,22,26],['ST',64,'START',30,86,22,12],['SE',128,'SELECT',54,86,22,12]];
+var padEl=document.getElementById('pad'),active={};
+function build(){
+  padEl.innerHTML='';
+  layout.forEach(function(l){var d=document.createElement('div');d.dataset.m=l[1];d.textContent=l[2];
+    var u=function(v){return v+'vmin';};
+    d.style.left=(l[0]==='A'||l[0]==='B'?'auto':u(l[3]));if(l[0]==='A'||l[0]==='B'){d.style.right=u(100-l[3]-l[5]-(window.innerWidth>window.innerHeight?0:0));}
+    d.style.top=u(l[4]-44);d.style.width=u(l[5]);d.style.height=u(l[6]);d.style.fontSize=(l[2].length>2?'2.2vmin':'4vmin');
+    padEl.appendChild(d);});
+}
+build();
+function touchRecalc(ts){var m=0;for(var i=0;i<ts.length;i++){var t=ts[i];var el=document.elementFromPoint(t.clientX,t.clientY);if(el&&el.dataset&&el.dataset.m)m|=+el.dataset.m;}
+  touch=m;recalc();[].forEach.call(padEl.children,function(c){c.classList.toggle('on',!!(m&+c.dataset.m));});}
+['touchstart','touchmove','touchend','touchcancel'].forEach(function(n){addEventListener(n,function(e){
+  document.body.classList.add('touch');startAudio();touchRecalc(e.touches);if(e.target!==document.getElementById('start'))e.preventDefault();},{passive:false});});
+/* integer scaling */
+function fit(){
+  var w=innerWidth,h=innerHeight,padH=document.body.classList.contains('touch')&&h>w?0:0;
+  var s=Math.max(1,Math.floor(Math.min(w/160,h/144)));
+  if(document.body.classList.contains('touch')&&h>w*0.9){s=Math.max(1,Math.floor(w/160));canvas.parentNode.style.justifyContent='flex-start';canvas.style.marginTop='6px';}
+  else{canvas.parentNode.style.justifyContent='center';canvas.style.marginTop='0';}
+  canvas.style.width=160*s+'px';canvas.style.height=144*s+'px';
+}
+addEventListener('resize',fit);fit();setInterval(fit,1000);
+window.Module={canvas:canvas,print:function(t){console.log(t);},printErr:function(t){console.log(t);},
+  onRuntimeInitialized:function(){window.ltReady=true;}};
+})();
+</script>
+{{{ SCRIPT }}}
+</body></html>
