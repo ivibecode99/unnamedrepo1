@@ -1,0 +1,40 @@
+name: Build Web (HTML5/WASM) + deploy landing page
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["game/**", "web/**", ".github/workflows/build-web.yml"]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-godot
+        with: { templates: "true" }
+      - run: godot --headless --path game --import
+      - name: Export Web (single-threaded: works on any static host)
+        run: |
+          mkdir -p build/web
+          godot --headless --path game --export-release "Web" ../build/web/index.html
+      - name: Assemble site (landing page + /play)
+        run: |
+          mkdir -p site/play
+          cp -r web/* site/
+          cp -r build/web/* site/play/
+          touch site/.nojekyll
+      - uses: actions/upload-artifact@v4
+        with: { name: captco-web-site, path: site }
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: site }
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: web
+    runs-on: ubuntu-latest
+    environment: { name: github-pages, url: "${{ steps.d.outputs.page_url }}" }
+    steps:
+      - id: d
+        uses: actions/deploy-pages@v4

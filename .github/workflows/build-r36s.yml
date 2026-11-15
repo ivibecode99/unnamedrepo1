@@ -1,0 +1,27 @@
+name: Build Linux ARM64 (R36S / R36H)
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+jobs:
+  r36s:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-godot
+        with: { templates: "true" }
+      - run: godot --headless --path game --import
+      - name: Export Linux arm64
+        run: |
+          mkdir -p build/linux-arm64
+          godot --headless --path game --export-release "Linux ARM64 (R36S)" ../build/linux-arm64/CaptCo.arm64
+      - name: Package for handhelds
+        run: |
+          mkdir -p dist/captco/captco
+          cp build/linux-arm64/CaptCo.arm64 dist/captco/captco/
+          cp r36s/capt.gptk r36s/gamecontrollerdb.txt dist/captco/captco/
+          cp r36s/CaptCo.sh dist/captco/
+          chmod +x dist/captco/CaptCo.sh dist/captco/captco/CaptCo.arm64
+          cd dist && zip -r CaptCo-r36s-arm64.zip captco
+      - uses: actions/upload-artifact@v4
+        with: { name: captco-r36s-arm64, path: dist/CaptCo-r36s-arm64.zip }

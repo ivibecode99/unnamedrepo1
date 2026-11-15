@@ -1,0 +1,27 @@
+name: Build desktop (Windows / macOS / Linux)
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - { preset: "Linux x86_64",   out: "linux-x86_64/CaptCo.x86_64", name: linux-x86_64 }
+          - { preset: "Windows x86_64", out: "windows/CaptCo.exe",         name: windows-x86_64 }
+          - { preset: "macOS Universal", out: "macos/CaptCo.zip",          name: macos-universal }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-godot
+        with: { templates: "true" }
+      - run: godot --headless --path game --import
+      - name: Export ${{ matrix.preset }}
+        run: |
+          mkdir -p build/$(dirname "${{ matrix.out }}")
+          godot --headless --path game --export-release "${{ matrix.preset }}" "../build/${{ matrix.out }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: captco-${{ matrix.name }}
+          path: build/${{ matrix.name == 'linux-x86_64' && 'linux-x86_64' || matrix.name == 'windows-x86_64' && 'windows' || 'macos' }}

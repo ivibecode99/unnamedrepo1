@@ -7,14 +7,14 @@ shader_type spatial;
 uniform vec4 albedo : source_color = vec4(1.0);
 uniform float glow = 0.0;
 void fragment() {
-	ALBEDO = albedo.rgb;
+	ALBEDO = albedo.rgb * 0.88;
 	float rim = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 3.0);
 	EMISSION = albedo.rgb * glow + vec3(1.0) * rim * 0.18;
 }
 void light() {
 	float d = dot(NORMAL, LIGHT);
 	float s = smoothstep(0.0, 0.08, d) * 0.55 + smoothstep(0.45, 0.55, d) * 0.45;
-	DIFFUSE_LIGHT += LIGHT_COLOR * ATTENUATION * s;
+	DIFFUSE_LIGHT += LIGHT_COLOR * ATTENUATION * s / PI * 1.3;
 }
 """
 static var _shader: Shader
@@ -57,6 +57,8 @@ static func _mi(mesh: Mesh, c: Color, pos := Vector3.ZERO, glow := 0.0) -> MeshI
 	mi.material_override = mat(c, glow)
 	mi.position = pos
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if Settings.shadows_on() else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	if Settings.quality != "high":
+		mi.visibility_range_end = Settings.view_distance() * 0.55
 	return mi
 
 static func box(size: Vector3, c: Color, pos := Vector3.ZERO, glow := 0.0) -> MeshInstance3D:
@@ -143,6 +145,8 @@ static func label3d(text: String, pos: Vector3, size := 0.5, c := Color.WHITE) -
 	l.outline_size = 12
 	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	l.no_depth_test = true
+	if Settings.quality != "high":
+		l.visibility_range_end = 22.0
 	return l
 
 static func eyes(parent: Node3D, z: float, y: float, spread: float, r := 0.12) -> void:

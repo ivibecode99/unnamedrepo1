@@ -1,0 +1,36 @@
+name: Setup Godot 4.4.1
+description: Installs Godot 4.4.1 (headless-capable) and optionally the export templates.
+inputs:
+  templates:
+    description: "Install export templates (true/false)"
+    default: "false"
+runs:
+  using: composite
+  steps:
+    - name: Cache Godot
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/godot-bin
+          ~/.local/share/godot/export_templates
+        key: godot-4.4.1-${{ inputs.templates }}
+    - name: Download Godot
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -e
+        mkdir -p ~/godot-bin
+        curl -fsSL -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_linux.x86_64.zip
+        unzip -q /tmp/godot.zip -d ~/godot-bin
+        mv ~/godot-bin/Godot_v4.4.1-stable_linux.x86_64 ~/godot-bin/godot
+        chmod +x ~/godot-bin/godot
+        if [ "${{ inputs.templates }}" = "true" ]; then
+          curl -fsSL -o /tmp/tpl.tpz https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates /tmp/tpl
+          unzip -q /tmp/tpl.tpz -d /tmp/tpl
+          mv /tmp/tpl/templates ~/.local/share/godot/export_templates/4.4.1.stable
+        fi
+    - name: Add to PATH
+      shell: bash
+      run: echo "$HOME/godot-bin" >> "$GITHUB_PATH"

@@ -50,10 +50,22 @@ const AXES := {
 func _ready() -> void:
 	setup_input()
 	load_settings()
-	if OS.has_environment("CAPT_HANDHELD") or "--handheld" in OS.get_cmdline_user_args():
+	var args := OS.get_cmdline_args() + OS.get_cmdline_user_args()
+	if OS.has_environment("CAPT_HANDHELD") or "--handheld" in args or _looks_like_handheld():
 		handheld = true
 		quality = "low"
+	if "--quality=low" in args:
+		quality = "low"
 	apply()
+
+## Linux arm64 device with a tiny screen => R36S/R36H class handheld.
+func _looks_like_handheld() -> bool:
+	if DisplayServer.get_name() == "headless" or OS.get_name() != "Linux":
+		return false
+	if Engine.get_architecture_name() != "arm64":
+		return false
+	var sz := DisplayServer.screen_get_size()
+	return sz.x <= 800 and sz.y <= 600
 
 func setup_input() -> void:
 	for a in ACTIONS:
@@ -155,9 +167,12 @@ func apply() -> void:
 	var vp := get_viewport()
 	if vp:
 		vp.msaa_3d = Viewport.MSAA_2X if quality == "high" else Viewport.MSAA_DISABLED
-	Engine.max_fps = 30 if (handheld or quality == "low" and handheld) else 0
-	if quality == "low":
-		Engine.max_fps = 30 if handheld else 60
+	Engine.max_fps = 30 if handheld else (60 if quality == "low" else 0)
+	if handheld and get_window():
+		var w := get_window()
+		w.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
+		w.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
+		w.content_scale_size = Vector2i(640, 480)
 	if has_node("/root/Audio"):
 		get_node("/root/Audio").apply_volumes()
 	changed.emit()

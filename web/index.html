@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Capt &amp; Co. — a 3D collect-a-thon</title>
+<meta name="description" content="Play Capt & Co. in your browser: throw your living hat Capt, capture creatures, collect 66 Stars across six kingdoms.">
+<style>
+:root{--bg:#171233;--bg2:#2b1f5c;--ink:#f4f1ff;--mut:#b9b2e0;--gold:#ffd93d;--red:#ff4f6d;--card:#241b52;--line:#4a3d99}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:radial-gradient(1200px 600px at 50% -10%,var(--bg2),var(--bg));min-height:100vh;line-height:1.55}
+a{color:var(--gold)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header{padding:48px 0 24px;text-align:center}
+.hat{width:120px;height:auto;filter:drop-shadow(0 8px 0 rgba(0,0,0,.25));animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(-3deg)}}
+h1{font-size:clamp(2.4rem,7vw,4.6rem);margin:.2em 0 0;color:var(--gold);letter-spacing:.02em;text-shadow:0 4px 0 #000a}
+.tag{color:var(--mut);font-size:1.15rem;margin:.2em 0 1.2em}
+.btn{display:inline-block;background:var(--gold);color:#2b1f00;font-weight:800;padding:.85em 1.6em;border-radius:14px;text-decoration:none;border:0;font-size:1.1rem;cursor:pointer;box-shadow:0 5px 0 #b38a00}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b38a00}
+.btn.alt{background:var(--card);color:var(--ink);box-shadow:0 5px 0 #0006;border:2px solid var(--line)}
+#stage{margin:28px auto;max-width:1040px;aspect-ratio:16/9;background:#000;border:4px solid var(--gold);border-radius:16px;overflow:hidden;position:relative}
+#stage iframe{width:100%;height:100%;border:0;display:block}
+#stage .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:linear-gradient(#1c1646,#2f6b4d);text-align:center;padding:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:24px 0}
+.card{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:18px}
+.card h3{margin:.1em 0 .4em;color:var(--gold)}
+h2{margin:2em 0 .4em;font-size:1.7rem}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+td,th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left}
+kbd{background:#0006;border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-family:ui-monospace,monospace}
+footer{margin:60px 0 40px;color:var(--mut);font-size:.9rem;text-align:center}
+.pill{display:inline-block;background:#0005;border:1px solid var(--line);border-radius:99px;padding:2px 12px;margin:2px;font-size:.85rem}
+@media(max-width:600px){#stage{aspect-ratio:4/3}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <svg class="hat" viewBox="0 0 120 90" role="img" aria-label="Capt, the living hat">
+    <ellipse cx="60" cy="62" rx="52" ry="12" fill="#8b1a3a"/>
+    <path d="M18 60 Q22 14 60 12 Q98 14 102 60 Z" fill="#e8365a"/>
+    <rect x="18" y="52" width="84" height="10" fill="#ffd93d"/>
+    <circle cx="46" cy="38" r="12" fill="#fff"/><circle cx="76" cy="38" r="12" fill="#fff"/>
+    <circle cx="49" cy="40" r="5.5" fill="#111"/><circle cx="79" cy="40" r="5.5" fill="#111"/>
+    <path d="M8 40 L22 30 L20 48 Z" fill="#fff"/><path d="M112 40 L98 30 L100 48 Z" fill="#fff"/>
+  </svg>
+  <h1>CAPT &amp; CO.</h1>
+  <p class="tag">Throw your living hat. Capture creatures. Collect 66 Stars. Chase a very grumpy Baron.</p>
+  <p><button class="btn" id="play">&#9654; Play in browser</button>
+     <a class="btn alt" href="#downloads">Downloads</a>
+     <a class="btn alt" href="#pocket">Pocket Edition</a></p>
+</header>
+
+<div id="stage"><div class="ph"><strong style="font-size:1.4rem">Ready when you are</strong>
+  <span style="color:#cfd">Keyboard + mouse or gamepad. Click to start (browsers need a click before audio can play).</span>
+  <button class="btn" id="play2">&#9654; Start game</button></div></div>
+
+<div class="grid">
+  <div class="card"><h3>Six kingdoms + airship</h3><p>Forest, desert, city, ocean, snow and a lava sky — plus a hub airship and the Baron's giant Music Box.</p></div>
+  <div class="card"><h3>66 Stars</h3><p>Boss fights, platform towers, hidden nooks, NPC fetch quests, coin goals, shop stars and capture challenges.</p></div>
+  <div class="card"><h3>Capture anything</h3><p>18 creatures and objects — frogs, scarabs, penguins, a lava golem, a cannon — each with its own way to move.</p></div>
+  <div class="card"><h3>All original</h3><p>Every model, tune and sound is generated in code. No third-party art or audio.</p></div>
+</div>
+
+<h2>Controls</h2>
+<div class="card"><table>
+<tr><th>Action</th><th>Keyboard / mouse</th><th>Gamepad</th></tr>
+<tr><td>Move / camera</td><td><kbd>WASD</kbd> / mouse or arrows</td><td>Left stick / right stick</td></tr>
+<tr><td>Jump (triple jump by chaining), talk</td><td><kbd>Space</kbd></td><td>A</td></tr>
+<tr><td>Throw Capt (hold &amp; release creature)</td><td><kbd>E</kbd> / left click</td><td>X</td></tr>
+<tr><td>Hat spin</td><td><kbd>Q</kbd></td><td>Y</td></tr>
+<tr><td>Crouch → long jump · ground pound (air)</td><td><kbd>C</kbd> / <kbd>Ctrl</kbd></td><td>B</td></tr>
+<tr><td>Roll · Dive</td><td><kbd>Shift</kbd> · <kbd>V</kbd> / right click</td><td>R1 · L1 / R2</td></tr>
+<tr><td>Pause · Skip text</td><td><kbd>Esc</kbd> · <kbd>Tab</kbd></td><td>Start · Select</td></tr>
+</table></div>
+
+<h2 id="downloads">Downloads</h2>
+<div class="grid">
+  <div class="card"><h3>Windows / macOS / Linux</h3><p>x86_64 for all three, universal (Intel + Apple Silicon) on macOS.</p><p><a href="https://github.com/ivibecode99/unnamedrepo1/releases">Releases</a></p></div>
+  <div class="card"><h3>R36S / R36H handhelds</h3><p>Linux ARM64, 640×480, low-spec preset, 30 FPS. ArkOS / dArkOS / ROCKNIX launcher included.</p><p><a href="https://github.com/ivibecode99/unnamedrepo1/releases">CaptCo-r36s-arm64.zip</a></p></div>
+</div>
+
+<h2 id="pocket">Pocket Edition (GBA · GB · GBC)</h2>
+<div class="card"><p>A 2D side-view demake: 4 levels, 2 bosses, the hat throw, battery saves.
+<span class="pill">.gba (Butano)</span><span class="pill">.gb</span><span class="pill">.gbc</span></p>
+<p>The <code>.gba</code> also runs on the R36S/R36H via its built-in emulator. See the README for flash-cart instructions.</p>
+<p><a href="https://github.com/ivibecode99/unnamedrepo1/releases">Download ROMs</a></p></div>
+
+<footer>Capt &amp; Co. is an original game. Source on <a href="https://github.com/ivibecode99/unnamedrepo1">GitHub</a>.</footer>
+</div>
+<script>
+function start(){
+  var s=document.getElementById('stage');
+  s.innerHTML='<iframe src="play/index.html" allow="autoplay; fullscreen; gamepad" title="Capt & Co."></iframe>';
+  s.scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(function(){var f=s.querySelector('iframe'); if(f) f.focus();},400);
+}
+document.getElementById('play').onclick=start;
+document.getElementById('play2').onclick=start;
+</script>
+</body>
+</html>

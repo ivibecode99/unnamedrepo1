@@ -1,0 +1,31 @@
+name: Build Pocket Edition (GBA / GB / GBC)
+on:
+  workflow_dispatch:
+  push:
+    branches: ["**"]
+    paths: ["pocket/**", ".github/workflows/build-pocket.yml"]
+    tags: ["v*"]
+jobs:
+  gb-gbc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install GBDK-2020
+        run: |
+          curl -fsSL -o /tmp/gbdk.tgz https://github.com/gbdk-2020/gbdk-2020/releases/download/4.3.0/gbdk-linux64.tar.gz
+          tar xzf /tmp/gbdk.tgz -C "$HOME"
+          echo "GBDK_HOME=$HOME/gbdk" >> "$GITHUB_ENV"
+      - run: make -C pocket/gb all
+      - uses: actions/upload-artifact@v4
+        with: { name: captco-pocket-gb-gbc, path: "pocket/gb/build/*.gb*" }
+  gba:
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitarm:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch Butano
+        run: git clone --depth 1 https://github.com/GValiente/butano.git /opt/butano
+      - name: Build GBA ROM
+        run: make -C pocket/gba -j2 LIBBUTANO=/opt/butano/butano
+      - uses: actions/upload-artifact@v4
+        with: { name: captco-pocket-gba, path: "pocket/gba/*.gba" }

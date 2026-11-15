@@ -8,7 +8,7 @@ var menu: Control
 
 func _ready() -> void:
 	theme = UiTheme.get_theme()
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	if DisplayServer.get_name() != "headless":
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -21,7 +21,7 @@ func _clear() -> void:
 	if menu:
 		menu.queue_free()
 	menu = Control.new()
-	menu.set_anchors_preset(Control.PRESET_FULL_RECT)
+	menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(menu)
 
 func _main_menu() -> void:

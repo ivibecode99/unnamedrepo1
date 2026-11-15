@@ -29,12 +29,12 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	root = Control.new()
 	root.theme = UiTheme.get_theme()
-	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
 	draw_ctl = HudDraw.new()
 	draw_ctl.hud = self
-	draw_ctl.set_anchors_preset(Control.PRESET_FULL_RECT)
+	draw_ctl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	draw_ctl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(draw_ctl)
 	toast_label = UiTheme.label("", 26, Color(1, 1, 0.7))
@@ -63,7 +63,7 @@ func _ready() -> void:
 	capture_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	root.add_child(capture_label)
 	boss_panel = Control.new()
-	boss_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	boss_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	boss_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	boss_panel.visible = false
 	root.add_child(boss_panel)
@@ -87,7 +87,7 @@ func _ready() -> void:
 	dialogue = DialogueUI.new()
 	root.add_child(dialogue)
 	menu_layer = Control.new()
-	menu_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	menu_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	menu_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(menu_layer)
 	Game.toast.connect(_on_toast)
@@ -163,7 +163,7 @@ func _make_panel(title: String, w := 0.5) -> VBoxContainer:
 	_clear_menu()
 	var dim := ColorRect.new()
 	dim.color = Color(0, 0, 0, 0.55)
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	dim.mouse_filter = Control.MOUSE_FILTER_STOP
 	menu_layer.add_child(dim)
 	var p := PanelContainer.new()
@@ -337,6 +337,7 @@ func _open_pause() -> void:
 	menu_open = true
 	get_tree().paused = true
 	Audio.duck(true)
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	var vb := _make_panel("Paused", 0.4)
 	var resume := UiTheme.button("Resume", _resume)
 	vb.add_child(resume)

@@ -72,10 +72,10 @@ func _build_environment() -> void:
 	env.background_mode = Environment.BG_SKY
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = pal["sky_hor"].lerp(Color.WHITE, 0.4)
-	env.ambient_light_energy = 0.75
+	env.ambient_light_energy = 0.42
 	env.fog_enabled = Settings.quality != "low" or true
 	env.fog_light_color = pal["fog"]
-	env.fog_density = 0.004 if Settings.quality == "high" else 0.006
+	env.fog_density = 0.0025
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	if Settings.quality == "high":
 		env.glow_enabled = true
@@ -85,7 +85,9 @@ func _build_environment() -> void:
 	add_child(we)
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-52, -35, 0)
-	sun.light_energy = 1.15
+	sun.light_energy = 0.95
+	sun.shadow_bias = 0.08
+	sun.shadow_normal_bias = 1.6
 	sun.shadow_enabled = Settings.shadows_on()
 	sun.directional_shadow_max_distance = 90.0
 	add_child(sun)

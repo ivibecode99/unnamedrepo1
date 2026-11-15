@@ -1,0 +1,6 @@
+# SDL game controller mappings for R36S / R36H (RK3326, Linux "odroidgo2_joypad"-style input).
+# BEST EFFORT - not tested on real hardware. Different board revisions enumerate buttons differently;
+# if a button is wrong, run `jstest /dev/input/js0` on the device, edit this file and relaunch
+# (or use the gptokeyb fallback in CaptCo.sh, which is independent of these indices).
+190000004b4800000010000001010000,GO-Super Gamepad,platform:Linux,a:b1,b:b0,x:b2,y:b3,back:b12,start:b13,leftshoulder:b4,rightshoulder:b5,lefttrigger:b6,righttrigger:b7,dpup:b8,dpdown:b9,dpleft:b10,dpright:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,
+19000000010000000100000000010000,GO-Advance Gamepad,platform:Linux,a:b1,b:b0,x:b2,y:b3,back:b12,start:b13,leftshoulder:b4,rightshoulder:b5,lefttrigger:b6,righttrigger:b7,dpup:b8,dpdown:b9,dpleft:b10,dpright:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,

@@ -3,7 +3,7 @@ extends Node
 ## Exits non-zero when any check fails.
 const SUITES := [
 	"res://tests/test_data.gd", "res://tests/test_input.gd", "res://tests/test_save.gd", "res://tests/test_movement.gd",
-	"res://tests/test_capture.gd", "res://tests/test_boss.gd", "res://tests/test_world.gd", "res://tests/test_audio.gd",
+	"res://tests/test_capture.gd", "res://tests/test_boss.gd", "res://tests/test_world.gd", "res://tests/test_ui.gd", "res://tests/test_flow.gd", "res://tests/test_audio.gd",
 ]
 var checks := 0
 var failures := 0
