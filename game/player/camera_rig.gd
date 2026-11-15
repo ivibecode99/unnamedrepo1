@@ -27,6 +27,9 @@ func _ready() -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _unhandled_input(ev: InputEvent) -> void:
+	# click to (re)capture the mouse - browsers need a user gesture before pointer lock
+	if ev is InputEventMouseButton and ev.pressed and DisplayServer.get_name() != "headless" and not get_tree().paused and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	if not enabled:
 		return
 	if ev is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:

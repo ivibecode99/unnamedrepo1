@@ -11,3 +11,4 @@ pocket/gba/*.map
 pocket/gba/*.gba
 pocket/gba/bn_ofiles.txt
 pocket/gb/build/
+*.sav

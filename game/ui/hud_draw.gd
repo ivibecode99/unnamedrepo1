@@ -29,7 +29,9 @@ func _draw() -> void:
 	var sc := Vector2(36, 86)
 	draw_colored_polygon(_star_poly(sc, 18), Color(0.1, 0.07, 0.0))
 	draw_colored_polygon(_star_poly(sc, 15), Color(1.0, 0.85, 0.2))
-	draw_string(font, Vector2(62, 96), "%d / %d" % [Game.star_count(), Kingdoms.total_stars()], HORIZONTAL_ALIGNMENT_LEFT, -1, fs, Color.WHITE)
+	var st := "%d / %d" % [Game.star_count(), Kingdoms.total_stars()]
+	draw_string_outline(font, Vector2(62, 96), st, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, 8, Color(0.05, 0.05, 0.2))
+	draw_string(font, Vector2(62, 96), st, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, Color.WHITE)
 	# coins
 	var k := Game.current_kingdom
 	var cc: Color = Kingdoms.DATA[k]["coin"]["color"]
@@ -37,4 +39,6 @@ func _draw() -> void:
 	draw_circle(cp, 15, Color(0.1, 0.07, 0.0))
 	draw_circle(cp, 12, cc)
 	draw_circle(cp, 7, cc.darkened(0.25))
-	draw_string(font, Vector2(62, 144), "%s  %d" % [Kingdoms.DATA[k]["coin"]["name"], Game.coins(k)], HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color.WHITE)
+	var ct := "%s  %d" % [Kingdoms.DATA[k]["coin"]["name"], Game.coins(k)]
+	draw_string_outline(font, Vector2(62, 144), ct, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, 7, Color(0.05, 0.05, 0.2))
+	draw_string(font, Vector2(62, 144), ct, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color.WHITE)

@@ -309,7 +309,7 @@ func _capture_site(center: Vector3) -> void:
 		"scarab", "penguin":
 			# wide gap that only a dashing/sliding creature can clear
 			cylinder(center + Vector3(0, -0.4, 0), 4.5, 0.9, g("ground2"))
-			var land := center + Vector3(0, 0, 18.0)
+			var land := center + Vector3(0, 0, 22.0)
 			cylinder(land + Vector3(0, -0.4, 0), 4.5, 0.9, g("ground2"))
 			star(sid, land + Vector3(0, 1.5, 0))
 			creature(ck, center + Vector3(0, 0, -2))

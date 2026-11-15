@@ -21,8 +21,8 @@ func _ready() -> void:
 	panel = PanelContainer.new()
 	panel.anchor_left = 0.06
 	panel.anchor_right = 0.94
-	panel.anchor_top = 0.68
-	panel.anchor_bottom = 0.96
+	panel.anchor_top = 0.58 if Settings.handheld else 0.68
+	panel.anchor_bottom = 0.97
 	add_child(panel)
 	var vb := VBoxContainer.new()
 	panel.add_child(vb)
