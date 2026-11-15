@@ -1,0 +1,75 @@
+extends RefCounted
+func run(t) -> void:
+	var g = t.root.get_node("Game")
+	g.save_enabled = true
+	var slot := 2
+	g.delete_slot(slot)
+	t.check(g.slot_info(slot).is_empty(), "empty slot reports empty")
+	g.new_game(slot)
+	t.check(FileAccess.file_exists(g.slot_path(slot)), "new game writes file")
+	t.check(not FileAccess.file_exists(g.slot_path(slot) + ".tmp"), "no tmp file left (atomic write)")
+	g.collect_star("forest_boss")
+	g.collect_star("forest_boss")
+	t.check(g.star_count() == 1, "duplicate star ignored")
+	g.add_coins("forest", 12)
+	g.add_coins("desert", 3)
+	g.set_flag("hello", true)
+	g.data["outfit"] = "leaf"
+	g.data["health_max"] = 5
+	g.mark_collected("forest_c4")
+	g.defeat_boss("mogul")
+	g.save_game()
+	# wipe and reload
+	var before: Dictionary = g.data.duplicate(true)
+	g.data = g.blank_data()
+	t.check(g.star_count() == 0, "state wiped")
+	var ok: bool = g.load_game(slot)
+	t.check(ok, "load succeeds")
+	t.check(g.has_star("forest_boss"), "star persisted")
+	t.check(g.coins("forest") == 12 and g.coins("desert") == 3, "coins persisted per kingdom")
+	t.check(g.flag("hello"), "flags persisted")
+	t.check(g.data["outfit"] == "leaf", "outfit persisted")
+	t.check(g.max_health() == 5, "max health persisted")
+	t.check(g.is_collected("forest_c4"), "collected coin id persisted")
+	t.check(g.boss_defeated("mogul"), "boss persisted")
+	var info: Dictionary = g.slot_info(slot)
+	t.check(info["stars"] == 1, "slot info stars")
+	# slots are independent
+	g.delete_slot(1)
+	g.new_game(1)
+	g.collect_star("desert_boss")
+	g.collect_star("desert_tower")
+	g.save_game()
+	t.check(g.slot_info(1)["stars"] == 2 and g.slot_info(slot)["stars"] == 1, "slots independent")
+	# corruption: tamper with the file
+	var f := FileAccess.open(g.slot_path(slot), FileAccess.READ)
+	var txt := f.get_as_text()
+	f.close()
+	var tampered := txt.replace("\"forest_boss\"", "\"forest_boss\", \"cheat_star\"")
+	t.check(g.parse_save(tampered).is_empty(), "tampered save rejected by checksum")
+	t.check(g.parse_save("{not json").is_empty(), "garbage rejected")
+	var w := FileAccess.open(g.slot_path(slot), FileAccess.WRITE)
+	w.store_string("garbage{")
+	w.close()
+	t.check(g.slot_info(slot).get("corrupt", false), "corrupt slot detected")
+	t.check(not g.load_game(slot), "corrupt load fails gracefully")
+	# migration from v1 (no checksum, no coins_total)
+	var v1 := JSON.stringify({"version": 1, "stars": ["forest_boss", "forest_boss", "forest_tower"], "coins": {"forest": 7}, "health_max": 99})
+	var m: Dictionary = g.parse_save(v1)
+	t.check(not m.is_empty() and m["version"] == g.SAVE_VERSION, "v1 migrates")
+	t.check(m["stars"].size() == 2, "migration dedupes stars")
+	t.check(m["health_max"] == g.MAX_HEALTH, "migration clamps health")
+	t.check(m["coins_total"]["forest"] == 7, "migration fills coins_total")
+	# unlocking by stars
+	g.data = g.blank_data()
+	for i in 5:
+		g.data["stars"].append("x%d" % i)
+	t.check(g.is_unlocked("desert"), "desert unlocks at 5 stars")
+	t.check(not g.is_unlocked("city"), "city locked at 5 stars")
+	# spend coins
+	g.add_coins("forest", 10)
+	t.check(g.spend_coins("forest", 4) and g.coins("forest") == 6, "spend coins")
+	t.check(not g.spend_coins("forest", 99), "cannot overspend")
+	for s in 3:
+		g.delete_slot(s)
+	g.save_enabled = false
