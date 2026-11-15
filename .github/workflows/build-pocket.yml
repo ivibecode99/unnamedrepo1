@@ -16,6 +16,10 @@ jobs:
           tar xzf /tmp/gbdk.tgz -C "$HOME"
           echo "GBDK_HOME=$HOME/gbdk" >> "$GITHUB_ENV"
       - run: make -C pocket/gb all
+      - name: Emulator tests (PyBoy)
+        run: |
+          pip install pyboy pillow
+          python3 pocket/tests/test_gb.py
       - uses: actions/upload-artifact@v4
         with: { name: captco-pocket-gb-gbc, path: "pocket/gb/build/*.gb*" }
   gba:
@@ -28,4 +32,17 @@ jobs:
       - name: Build GBA ROM
         run: make -C pocket/gba -j2 LIBBUTANO=/opt/butano/butano
       - uses: actions/upload-artifact@v4
-        with: { name: captco-pocket-gba, path: "pocket/gba/*.gba" }
+        with: { name: captco-pocket-gba, path: "pocket/gba/captco_pocket.*" }
+  test-gba:
+    needs: gba
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: captco-pocket-gba, path: pocket/gba }
+      - name: Install emulator + tools
+        run: sudo apt-get update && sudo apt-get install -y mgba-sdl xdotool imagemagick xvfb binutils-arm-none-eabi
+      - name: mGBA end-to-end test
+        run: |
+          mkdir -p /tmp/shots
+          xvfb-run -a -s "-screen 0 480x320x24" python3 pocket/tests/test_gba.py pocket/gba/captco_pocket.gba

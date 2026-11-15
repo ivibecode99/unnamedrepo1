@@ -144,7 +144,7 @@ def boss_fight(e, boss, arena0, n):
         e.gdb.halt(); e.seti("invuln", 250); e.seti("hp", 3); e.gdb.cont()
         time.sleep(0.25)
     check(len(seen) >= 3, "L%d: boss cycles through states %s" % (n, sorted(seen)))
-    e.shot("/tmp/claude-0/shots/gba_boss%d.png" % n)
+    e.shot("/tmp/shots/gba_boss%d.png" % n)
     for _ in range(16):
         e.gdb.halt()
         e.setb("bvuln", 1); e.seti("bflash", 0); e.seti("bstate", 4 if boss == 1 else 3)
@@ -158,6 +158,7 @@ def boss_fight(e, boss, arena0, n):
     check(e.getb("star_spawned") == 1, "L%d: boss drops the star" % n)
 
 def run():
+    os.makedirs("/tmp/shots", exist_ok=True)
     tmp = tempfile.mkdtemp(prefix="captco_gba_")
     print("== %s" % os.path.basename(ROM))
     data = open(ROM, "rb").read()
@@ -166,7 +167,7 @@ def run():
     check(len(data) <= 32 * 1024 * 1024, "ROM within GBA cart size")
     e = Emu(ROM, tmp)
     check(e.geti("save_reached") == 0, "fresh boot: no save")
-    e.shot("/tmp/claude-0/shots/gba_t_title.png")
+    e.shot("/tmp/shots/gba_t_title.png")
     e.key("Return", 0.15, 0.5)
     cards(e, 4)
     time.sleep(1.0)
@@ -187,7 +188,7 @@ def run():
     check(hs in (1, 2), "B throws Capt (hat_state=%d)" % hs)
     time.sleep(1.5)
     check(e.geti("hat_state") == 0, "Capt returns")
-    e.shot("/tmp/claude-0/shots/gba_t_play.png")
+    e.shot("/tmp/shots/gba_t_play.png")
     # level 1 star
     teleport(e, 114, 11)
     time.sleep(2.5)
@@ -207,7 +208,7 @@ def run():
     e.p = subprocess.Popen([MGBA, "-2", "-g", e.rom], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     e.gdb = Gdb(); e.gdb.cont(); e.sym = symbols(); time.sleep(2.5)
     check(e.geti("save_reached") == 1 and e.geti("save_stars") == 1, "save survives power cycle (reached=%d)" % e.geti("save_reached"))
-    e.shot("/tmp/claude-0/shots/gba_t_continue.png")
+    e.shot("/tmp/shots/gba_t_continue.png")
     e.key("Return", 0.15, 0.6)         # CONTINUE
     cards(e, 1)
     time.sleep(1.0)
@@ -233,7 +234,7 @@ def run():
     time.sleep(2.5)
     cards(e, 6)
     time.sleep(1.5)
-    e.shot("/tmp/claude-0/shots/gba_t_end.png")
+    e.shot("/tmp/shots/gba_t_end.png")
     check(e.geti("save_reached") == 0, "save reset after finishing the game (reached=%d)" % e.geti("save_reached"))
     e.stop()
     shutil.rmtree(tmp, ignore_errors=True)

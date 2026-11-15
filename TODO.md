@@ -10,7 +10,7 @@ Legend: [x] done and covered by automated tests · [~] done, verified only partl
 - [x] M4 Boss framework: 5 bosses + final boss; 3-slot save system with checksum, atomic writes, migration
 - [x] M5 Story: intro, arrival, boss and ending cutscenes; 44 NPCs; dialogue box with skip; fetch quests; shops; hub map
 - [x] M6 66 Stars, kingdom coins and shops, kingdom unlock gates
-- [x] M7 Music (12 tracks) and 40 SFX, all synthesized
+- [x] M7 Music (12 tracks) and 37 SFX, all synthesized
 - [x] M8 Quality presets (High/Medium/Low), handheld mode, 30 FPS cap
 - [x] M9 Exports: Linux x86_64, Windows, macOS universal, Web (+landing page, +Pages workflow), Linux ARM64 + R36S launcher; CI per target
 - [x] M10 Pocket Edition: GB, GBC (GBDK) and GBA (Butano): 4 levels, 2 bosses, hat throw, battery save, emulator tests
