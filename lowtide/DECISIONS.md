@@ -5,3 +5,10 @@
 - Audio: custom 4-channel driver on the same note data on every platform instead of hUGEDriver/maxmod (one data format, one driver, exact hardware model).
 - Overworld: rooms <=256x256 px, no streaming; 8x8 OBJ mode; NPC overworld sprites are single 16x16 frames with bob/flip idle (portraits/battle sprites carry full animation).
 - DMG test ROM copy clears the CGB flag because mGBA picks the model from the header.
+- Maps are authored as ASCII in Python (`content/*.py`) and compiled directly to chunks; the pipeline does not read Tiled JSON (no Tiled tool available, and the ASCII form is reviewable in diffs). `tools/sheet.py` + `build/maps_sheet.png` give visual review.
+- Dialogue/puzzles live in a small line-based script DSL (`tools/lib.py`): `speaker.emotion: text`, labels, `if/goto`, `choice`, `battle`, `warp`, etc. Long map scripts are auto-split into scene chunks (`world.py` outlining) to fit the 2304-byte scene buffer.
+- Bot tests drive the SDL build over a stdin/stdout bridge (`--bridge`) instead of linking the bot into C, so the bot can be written in Python and uses only controller input plus observed state.
+- Game-over (RELIGHT) restarts the battle at full HP rather than losing progress; the death-screen ignores input for 40 frames so held dodge keys cannot choose TITLE by accident.
+- GB cart type is MBC5+RAM+BATTERY (0x1B); the ROM is padded to 512 KB (32 banks) although only ~320 KB is used.
+- Endings: Peace = no boss kills and <=3 normal kills; True = Peace + 0 kills + all 5 Memory Shells + Skiff befriended + Marrow spared by singing; Neutral = Marrow spared but any boss killed or >3 kills; Fight = Marrow killed.
+- Length: ~350 dialogue lines and ~600 battle lines across 31 rooms, 18 battles. This is roughly 1.5-3 hours for a first playthrough, **below the 4-6 hour target**; the structure (prologue + 5 zones + finale) is complete, depth is not.

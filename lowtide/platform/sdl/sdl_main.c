@@ -216,6 +216,10 @@ static void frame_step(void) {
         int i;
         for (i = 0; i < nkev; i++) if (kev[i].frame <= cur_frame) scripted_keys = kev[i].mask;
     }
+    {   /* hold START+SELECT for 1.5s to quit (needed on the R36S, harmless elsewhere) */
+        static int combo;
+        if ((plat_keys() & (K_START | K_SELECT)) == (K_START | K_SELECT)) { if (++combo > 90) running = 0; } else combo = 0;
+    }
     soft_master = meta.vol ? meta.vol / 8.0f * 0.6f : 0.0f;
     if (meta.magic != 0xA7) soft_master = 0.4f;
     core_frame();

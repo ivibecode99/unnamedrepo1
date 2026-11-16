@@ -1,0 +1,107 @@
+name: LOWTIDE build and release
+on:
+  push:
+    paths: ['lowtide/**', '.github/workflows/lowtide-release.yml']
+  workflow_dispatch:
+  release:
+    types: [published]
+defaults:
+  run:
+    working-directory: lowtide
+env:
+  SDL_VER: 2.30.9
+  GBDK_VER: 4.3.0
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libsdl2-dev python3-numpy cmake
+      - run: make native
+      - run: make test
+      - name: Playthrough bots (all four endings)
+        run: tests/run_bots.sh build/linux-x64/lowtide
+  linux-windows:
+    runs-on: ubuntu-24.04
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libsdl2-dev cmake mingw-w64 zip python3-numpy
+      - name: SDL2 for MinGW
+        run: |
+          curl -sSL -o /tmp/sdlw.tgz https://github.com/libsdl-org/SDL/releases/download/release-$SDL_VER/SDL2-devel-$SDL_VER-mingw.tar.gz
+          mkdir -p /tmp/sdlw && tar xzf /tmp/sdlw.tgz -C /tmp/sdlw
+      - run: SDL2_MINGW=/tmp/sdlw/SDL2-$SDL_VER/x86_64-w64-mingw32 tools/package.sh || true
+      - uses: actions/upload-artifact@v4
+        with: { name: desktop, path: "lowtide/dist/lowtide-linux-x86_64.tar.gz\nlowtide/dist/lowtide-windows-x64.zip\nlowtide/dist/lowtide-art-music-previews.zip" }
+  linux-arm64-r36s:
+    runs-on: ubuntu-24.04-arm
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libsdl2-dev cmake zip python3-numpy
+      - run: |
+          for t in generic r36s; do flag=OFF; [ $t = r36s ] && flag=ON
+            cmake -S . -B build/$t -DCMAKE_BUILD_TYPE=Release -DLT_R36S=$flag && cmake --build build/$t -j4; done
+          mkdir -p dist build/pkg-a64/lowtide build/pkg-r36s/lowtide
+          cp build/generic/lowtide README.md build/pkg-a64/lowtide/ && tar czf dist/lowtide-linux-aarch64.tar.gz -C build/pkg-a64 lowtide
+          cp packaging/r36s/Lowtide.sh build/pkg-r36s/ && cp build/r36s/lowtide packaging/r36s/port.json README.md build/pkg-r36s/lowtide/
+          (cd build/pkg-r36s && zip -qr ../../dist/lowtide-r36s-portmaster.zip .)
+      - uses: actions/upload-artifact@v4
+        with: { name: arm64, path: "lowtide/dist/*" }
+  gameboy:
+    runs-on: ubuntu-24.04
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi python3-numpy
+      - name: GBDK-2020
+        run: |
+          curl -sSL -o /tmp/gbdk.tgz https://github.com/gbdk-2020/gbdk-2020/releases/download/$GBDK_VER/gbdk-linux64.tar.gz
+          sudo tar xzf /tmp/gbdk.tgz -C /opt
+      - run: tools/build_gb.sh && tools/build_gba.sh && mkdir -p dist && cp build/gb/lowtide.gbc build/gba/lowtide.gba dist/ && python3 tests/check_roms.py dist/lowtide.gbc dist/lowtide.gba
+      - uses: actions/upload-artifact@v4
+        with: { name: roms, path: "lowtide/dist/*" }
+  web:
+    runs-on: ubuntu-24.04
+    needs: test
+    container: emscripten/emsdk:3.1.64
+    steps:
+      - uses: actions/checkout@v4
+      - run: apt-get update && apt-get install -y zip python3-numpy
+      - run: tools/build_web.sh && mkdir -p dist && (cd build/web && zip -qr ../../dist/lowtide-web.zip index.html index.js index.wasm)
+      - uses: actions/upload-artifact@v4
+        with: { name: web, path: "lowtide/dist/*" }
+  macos:
+    runs-on: macos-14
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Universal static SDL2
+        run: |
+          curl -sSL -o /tmp/sdl.tgz https://github.com/libsdl-org/SDL/releases/download/release-$SDL_VER/SDL2-$SDL_VER.tar.gz
+          tar xzf /tmp/sdl.tgz -C /tmp
+          cmake -S /tmp/SDL2-$SDL_VER -B /tmp/sdl-build -DCMAKE_BUILD_TYPE=Release -DSDL_SHARED=OFF -DSDL_STATIC=ON -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_INSTALL_PREFIX=/tmp/sdl-univ
+          cmake --build /tmp/sdl-build -j4 && cmake --install /tmp/sdl-build
+      - name: Build universal app
+        run: |
+          cmake -S . -B build/mac -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DSDL2_DIR=/tmp/sdl-univ/lib/cmake/SDL2
+          cmake --build build/mac -j4
+          APP=dist/LOWTIDE.app; mkdir -p $APP/Contents/MacOS dist
+          cp build/mac/lowtide $APP/Contents/MacOS/lowtide
+          printf '<?xml version="1.0"?><plist version="1.0"><dict><key>CFBundleName</key><string>LOWTIDE</string><key>CFBundleExecutable</key><string>lowtide</string><key>CFBundleIdentifier</key><string>io.github.lowtide</string><key>CFBundlePackageType</key><string>APPL</string><key>CFBundleVersion</key><string>1</string><key>NSHighResolutionCapable</key><true/></dict></plist>' > $APP/Contents/Info.plist
+          lipo -info $APP/Contents/MacOS/lowtide
+          (cd dist && zip -qr lowtide-macos-universal.zip LOWTIDE.app)
+      - uses: actions/upload-artifact@v4
+        with: { name: macos, path: "lowtide/dist/lowtide-macos-universal.zip" }
+  publish:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-24.04
+    needs: [linux-windows, linux-arm64-r36s, gameboy, web, macos]
+    permissions: { contents: write }
+    defaults: { run: { working-directory: . } }
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: out, merge-multiple: true }
+      - uses: softprops/action-gh-release@v2
+        with: { files: "out/*" }

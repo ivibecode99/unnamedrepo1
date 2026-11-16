@@ -33,7 +33,10 @@ def build_strings(ch):
 
 def main():
     sys.path.insert(0, os.path.join(ROOT, 'content'))
-    out = os.path.join(ROOT, 'build', 'gen'); os.makedirs(out, exist_ok=True)
+    out = os.path.join(ROOT, 'build', 'gen')
+    if '--out' in sys.argv: out = os.path.abspath(sys.argv[sys.argv.index('--out') + 1])
+    os.makedirs(out, exist_ok=True)
+    global GEN_OUT; GEN_OUT = out
     ch = CHK.Chunks()
     import songs, music
     from lib import E

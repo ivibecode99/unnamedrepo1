@@ -63,7 +63,10 @@ int main(int argc, char **argv) {
     mCoreConfigSetValue(&core->config, "idleOptimization", "ignore");
     mCoreConfigSetIntValue(&core->config, "sgb.borders", 0);
     mCoreConfigSetIntValue(&core->config, "useCgbColors", 1);
+    mCoreConfigSetDefaultIntValue(&core->config, "volume", 0x100);
+    mCoreConfigSetDefaultIntValue(&core->config, "mute", 0);
     core->loadConfig(core, &core->config);
+    core->opts.volume = 0x100; core->opts.mute = false;
     unsigned w, h;
     core->desiredVideoDimensions(core, &w, &h);
     uint32_t *buf = calloc(w * h, 4);
@@ -85,8 +88,11 @@ int main(int argc, char **argv) {
         if (wf) {
             int n = blip_read_samples(core->getAudioChannel(core, 0), abuf, 4096, 1);
             blip_read_samples(core->getAudioChannel(core, 1), abuf + 1, 4096, 1);
+            if (getenv("AUDIO_DEBUG") && i % 100 == 0) fprintf(stderr, "frame %d samples %d first %d %d\n", i, n, abuf[0], abuf[1]);
             fwrite(abuf, 4, n, wf); wbytes += n * 4;
         }
+        if (getenv("REG_DEBUG") && i % 60 == 59) fprintf(stderr, "frame %d NR52=%02x NR50=%02x NR51=%02x NR12=%02x NR22=%02x NR32=%02x NR42=%02x\n", i, core->busRead8(core, 0xFF26), core->busRead8(core, 0xFF24), core->busRead8(core, 0xFF25), core->busRead8(core, 0xFF12), core->busRead8(core, 0xFF17), core->busRead8(core, 0xFF1C), core->busRead8(core, 0xFF21));
+        if (getenv("GBA_REG_DEBUG") && i % 90 == 89) fprintf(stderr, "frame %d SOUNDCNT_X=%04x SND1H=%04x SND2L=%04x SND3H=%04x SND4L=%04x\n", i, core->busRead16(core, 0x04000084), core->busRead16(core, 0x04000062), core->busRead16(core, 0x04000068), core->busRead16(core, 0x04000072), core->busRead16(core, 0x04000078));
         for (int s = 0; s < nshots; s++) if (shots[s].f == i) write_png(shots[s].path, buf, w == 256 ? 160 : w, w == 256 ? 144 : h, w, scale);
     }
     if (wf) {

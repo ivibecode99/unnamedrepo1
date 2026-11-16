@@ -138,6 +138,7 @@ static u8 wave[32];
 
 void plat_snd_trig(u8 c, u16 period, u8 env, u8 duty) {
     Chan *k = &ch[c & 3];
+    if (getenv("LT_SNDLOG")) fprintf(stderr, "trig ch%d period %u env %02x duty %d\n", c, period, env, duty);
     SOFT_LOCK();
     k->on = 1; k->period = period; k->env = env; k->duty = duty & 3;
     k->vol = env >> 4; k->dirup = (env >> 3) & 1; k->estep = env & 7; k->etimer = 0;

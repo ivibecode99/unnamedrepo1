@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "name": "lowtide.zip",
+  "items": ["Lowtide.sh", "lowtide"],
+  "items_opt": ["lowtide/saves"],
+  "attr": {
+    "title": "LOWTIDE",
+    "porter": "original",
+    "desc": "A story RPG about listening, on the dry seabed of a drained sea. Dodge, listen, release.",
+    "inst": "Copy Lowtide.sh and the lowtide folder to your ports directory. Gamepad only.",
+    "genres": ["rpg"],
+    "image": {},
+    "rtr": false,
+    "exp": false,
+    "runtime": null,
+    "reqs": []
+  }
+}
