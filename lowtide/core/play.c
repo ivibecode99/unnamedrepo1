@@ -356,6 +356,7 @@ void game_play_frame(void) API {
     world_draw();
 }
 
+void game_debug_battle(u16 chunk) API { pmode = P_ENDING; battle_start(chunk); }
 /* test hook: jump straight into a map with preset variables (used by headless tests and the playthrough bot) */
 void game_debug_apply(u8 map, u8 x, u8 y, u8 d, u8 n, const u8 *idx, const u8 *val) API {
     u8 i;

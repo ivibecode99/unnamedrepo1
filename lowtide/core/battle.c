@@ -23,6 +23,7 @@
 #define BS_FINISH 6
 #define BS_DEAD 7
 #define BS_WAIT 8
+#define BS_FLAVOR 9
 
 typedef struct { u8 kind, ox, oy, speed, angle, spread, count, period, start, dur, param, gfx, timer, cnt, ang; } Em;
 typedef struct { s16 x, y; s8 vx, vy; u8 age, gfx, beh, bnc; } Bul;
@@ -32,7 +33,7 @@ static u8 nem, bs, bs_next, bmsel, bsub, bitem_n, result, spareable, pat_len_t, 
 static u16 ehp, emax, gfx_chunk, bchunk, flavor_off, pat_frames, dodge_t;
 static u8 ew, eh, eframes, eanim, atk_val, deadsel, resolved, shield_t, shield_cd, invuln, sx, sy;
 static s16 soul_x, soul_y;
-static u8 bx0, by0, box_step;
+static u8 bx0, by0, box_step, flavor_shown, flavor_after;
 u8 bt_wait;
 extern u8 game_flag_title;
 extern u8 vm_ctx;
@@ -317,7 +318,7 @@ static void dodge_tick(void) {
 /* ---------- script ops from VM ---------- */
 void battle_cmd(u8 op, u8 a, u8 b) API {
     switch (op) {
-    case 0x24: flavor_off = (u16)(a | ((u16)b << 8)); break;
+    case 0x24: flavor_off = (u16)(a | ((u16)b << 8)); flavor_shown = 0; break;
     case 0x25: dodge_begin(a); break;
     case 0x26: tgtw = a; tgth = b; boxw = a; boxh = b; break;
     case 0x28: spareable = a; break;
@@ -351,12 +352,21 @@ static void list_draw(u8 listen) {
         plat_win_set((u8)(x - 1), y, i == bsub ? (u8)(T_UI + UI_CURSOR) : T_BLACK, P_UI);
     }
 }
+static void flavor_begin(u8 after) {
+    ui_say_open_y = 56; ui_say_close_y = 56;
+    ui_hide_sprites();
+    ui_win(56);
+    ui_say_begin(0, 0);
+    ui_say_text(g_scene + flavor_off);
+    flavor_shown = 1; flavor_after = after; bs = BS_FLAVOR;
+    cmd_draw(); status_draw(1, 9);
+}
 static void begin_menu(void) {
     bs = BS_MENU; bmsel = bmsel & 3;
     ui_say_open_y = 56; ui_say_close_y = 56;
     ui_win(56);
     ui_box(0, 0, 20, 6);
-    flavor_print();
+    if (flavor_off && !flavor_shown) { flavor_begin(BS_MENU); return; }
     cmd_draw();
     status_draw(1, 9);
 }
@@ -371,7 +381,7 @@ u8 battle_tick(void) API {
     if (bs == BS_SCRIPT) {
         if (vm_running_ctx(1)) { vm_ctx = 1; vm_tick(); vm_ctx = 0; return 0; }
         if (bs == BS_SCRIPT) {
-            if (bs_next == BS_FINISH) { bs = BS_FINISH; } else if (bs_next == 100) { start_turn(); return 0; } else { begin_menu(); }
+            if (bs_next == BS_FINISH) { if (flavor_off && !flavor_shown) { flavor_begin(BS_FINISH); return 0; } bs = BS_FINISH; } else if (bs_next == 100) { start_turn(); return 0; } else { begin_menu(); }
         }
         if (bs != BS_FINISH) return 0;
     }
@@ -380,6 +390,11 @@ u8 battle_tick(void) API {
         fx_fade(8, 2); while (fx_busy()) { fx_tick(); plat_vsync(); }
         sprites_off(); ui_say_open_y = 96; ui_say_close_y = 144; ui_win(144);
         return 1;
+    }
+    if (bs == BS_FLAVOR) {
+        if ((++eanim & 31) == 0 && eframes > 1) draw_enemy((u8)((eanim >> 5) & 1));
+        if (ui_say_tick()) { if (flavor_after == BS_FINISH) bs = BS_FINISH; else { bs = BS_MENU; cmd_draw(); } }
+        return 0;
     }
     /* idle animation */
     if ((++eanim & 31) == 0 && eframes > 1) draw_enemy((u8)((eanim >> 5) & 1));

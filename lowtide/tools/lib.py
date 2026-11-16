@@ -90,6 +90,7 @@ def tok_bytes(t):
     if m: return b'\x03' + bytes([('neutral happy sad angry surprised'.split().index(m.group(1)))])
     return t.encode('ascii', 'replace')
 
+FLAVOR_WARN = []
 class Script:
     """compiles script text -> bytes with local label offsets"""
     def __init__(self, text, ctx, ents=None, name='?'):
@@ -160,7 +161,8 @@ class Script:
         elif c == 'name': b += bytes([0x1E])
         elif c == 'flash': b += bytes([0x1F, int(a[0])])
         elif c == 'close': b += bytes([0x20])
-        elif c == 'flavor': b += bytes([0x24]) + wrap(a[0], 18, 4, page=False) + b'\0'
+        elif c == 'flavor':
+            b += bytes([0x24]) + wrap(a[0], 18, 3, page=True) + b'\0'
         elif c == 'attack': b += bytes([0x25, int(a[0])])
         elif c == 'box': b += bytes([0x26, int(a[0]), int(a[1])])
         elif c == 'layers': b += bytes([0x27, int(a[0], 0)])

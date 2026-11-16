@@ -51,6 +51,8 @@ def main():
         ch.fixed(CHK.LAYOUT['CH_SONG'] + i, data, 'song_' + sg.name)
     ch.fixed(CHK.LAYOUT['CH_SFX'], songs.sfx_bytes(), 'sfx')
     W.build(ch)
+    import lib
+    for nm, tx, n_ in lib.FLAVOR_WARN: print(f'FLAVOR TOO LONG ({n_} lines) in {nm}: {tx[:70]}')
     blob = ch.blob()
     open(os.path.join(out, 'blob.bin'), 'wb').write(blob)
     ch.emit_c(os.path.join(out, 'blob.c'), blob)

@@ -218,6 +218,9 @@ void core_init(void) API {
 #ifdef LT_BOOT_MAP
     game_debug_apply(LT_BOOT_MAP, LT_BOOT_X, LT_BOOT_Y, LT_BOOT_D, 0, 0, 0);
 #endif
+#ifdef LT_BOOT_BATTLE
+    g_mode = M_PLAY; game_debug_battle(LT_BOOT_BATTLE);
+#endif
 }
 void game_title(void) API { title_init(); }
 void core_frame(void) API {

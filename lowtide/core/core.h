@@ -159,6 +159,7 @@ void game_continue(void) API;
 void game_play_frame(void) API;
 void game_title(void) API;
 void recalc_stats(void) API;
+void game_debug_battle(u16 chunk) API;
 void game_debug_apply(u8 map, u8 x, u8 y, u8 d, u8 n, const u8 *idx, const u8 *val) API;
 void game_options_open(void) API;
 void item_name_print(u8 x, u8 y, u8 id) API;
