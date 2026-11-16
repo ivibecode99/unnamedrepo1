@@ -10,6 +10,6 @@ python3 tools/pack_gb.py build/gen/blob.bin $OUT/gen $FIRSTDATA
 LASTBANK=$(ls $OUT/gen/bank_*.c | wc -l); TOTAL=$((FIRSTDATA + LASTBANK))
 ROMBANKS=2; while [ $ROMBANKS -lt $TOTAL ]; do ROMBANKS=$((ROMBANKS*2)); done
 CORE=$(ls core/*.c)
-lcc -Icore -DPLATFORM_GB $EXTRA -Wm-yt0x1A -Wm-yn"LOWTIDE" -Wm-yo$ROMBANKS -Wm-ya4 -Wm-yc -Wl-j -Wl-m -autobank -Wb-ext=.rel -Wb-min=1 -Wb-max=$((FIRSTDATA-1)) \
+lcc -Icore -DPLATFORM_GB $EXTRA -Wm-yt0x1B -Wm-yn"LOWTIDE" -Wm-yo$ROMBANKS -Wm-ya4 -Wm-yc -Wl-j -Wl-m -autobank -Wb-ext=.rel -Wb-min=1 -Wb-max=$((FIRSTDATA-1)) \
   -o $OUT/lowtide.gbc platform/gb/main_gb.c $CORE $OUT/gen/chunkdir.c $OUT/gen/bank_*.c
 ls -la $OUT/lowtide.gbc

@@ -9,7 +9,7 @@ import art_basic
 UI_STRINGS = [
  ('S_PRESS', 'PRESS START'), ('S_NEWGAME', 'NEW GAME'), ('S_CONTINUE', 'CONTINUE'), ('S_OPTIONS', 'OPTIONS'),
  ('S_ATTACK', 'ATTACK'), ('S_LISTEN', 'LISTEN'), ('S_ITEM', 'ITEM'), ('S_RELEASE', 'RELEASE'),
- ('S_BACK', 'BACK'), ('S_YES', 'YES'), ('S_NO', 'NO'), ('S_SAVE', 'SAVE'), ('S_SAVED', 'The lantern holds your story.'),
+ ('S_BACK', 'BACK'), ('S_YES', 'YES'), ('S_NO', 'NO'), ('S_SAVE', 'SAVE'), ('S_SAVED', 'Your story is kept.'),
  ('S_EMPTY', 'EMPTY'), ('S_SLOT', 'SLOT'), ('S_TXTSPD', 'TEXT SPEED'), ('S_FLASH', 'REDUCE FLASH'), ('S_ASSIST', 'SLOW DODGE'),
  ('S_VOLUME', 'VOLUME'), ('S_KEYS', 'REMAP KEYS'), ('S_ON', 'ON'), ('S_OFF', 'OFF'), ('S_INSTANT', 'INSTANT'),
  ('S_FAST', 'FAST'), ('S_NORMAL', 'NORMAL'), ('S_SLOW', 'SLOW'), ('S_HP', 'HP'), ('S_LV', 'LV'), ('S_GOLD', 'SALT'),

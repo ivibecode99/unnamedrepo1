@@ -8,3 +8,6 @@ data:
 native: data
 	mkdir -p $(BUILD)
 	$(CC) $(CFLAGS) $(shell sdl2-config --cflags) -o $(BUILD)/lowtide $(CORE) platform/sdl/sdl_main.c platform/soft/soft.c build/gen/blob.c $(shell sdl2-config --libs) -lm
+
+test:
+	gcc -std=gnu99 -O1 -Icore -Wno-unused-function tests/unit.c core/*.c build/gen/blob.c -o build/unit -lm && ./build/unit

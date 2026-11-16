@@ -98,7 +98,7 @@ void game_continue(void) API {
 
 /* ---------- pause menu ---------- */
 void menu_pause(void) API {
-    pmode = P_MENU; menu_cur = 0; menu_sub = 0; stats_open = 0;
+    ui_hide_sprites(); pmode = P_MENU; menu_cur = 0; menu_sub = 0; stats_open = 0;
     ui_clear_win(); ui_win(0);
 }
 static void menu_draw(void) {
@@ -149,7 +149,7 @@ void shop_open(u8 id) API {
     plat_chunk_read(CH_SHOPS, (u16)(id * 10), b, 10);
     shop_n = b[0]; for (i = 0; i < 8; i++) shop_ents[i] = b[1 + i];
     shop_cur = 0; shop_msg = 0;
-    pmode = P_SHOP;
+    pmode = P_SHOP; ui_hide_sprites();
     ui_clear_win(); ui_win(0);
 }
 static void shop_draw(void) {
@@ -191,7 +191,7 @@ u8 shop_tick(void) API {
 
 /* ---------- naming ---------- */
 static const u8 *name_chars(void) { return (const u8 *)"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"; }
-void name_enter(void) API { name_cur = 0; name_len = 0; { u8 i; for (i = 0; i < 8; i++) g.name[i] = 0; } ui_clear_win(); ui_win(0); }
+void name_enter(void) API { ui_hide_sprites(); name_cur = 0; name_len = 0; { u8 i; for (i = 0; i < 8; i++) g.name[i] = 0; } ui_clear_win(); ui_win(0); }
 static void name_draw(void) {
     u8 i, n = 0;
     ui_clear_win();
@@ -205,7 +205,7 @@ static void name_draw(void) {
             if (idx < 62) { plat_win_set((u8)(2 + cc * 2), (u8)(5 + r * 2), (u8)(T_FONT + ch[idx] - 32), P_UI); plat_win_set((u8)(1 + cc * 2), (u8)(5 + r * 2), idx == name_cur ? (u8)(T_UI + UI_CURSOR) : T_BLACK, P_UI); }
         }
     }
-    ui_print(3, 3, (const u8 *)"START=OK B=DEL");
+    ui_print(3, 4, (const u8 *)"START=OK B=DEL");
     (void)n;
 }
 u8 name_tick(void) API {
@@ -226,7 +226,7 @@ u8 name_tick(void) API {
 
 /* ---------- save point ---------- */
 void save_menu_open(void) API {
-    save_cur = 0;
+    save_cur = 0; ui_hide_sprites();
     ui_clear_win(); ui_win(0);
     g.hp = g.maxhp;
     audio_sfx(6);

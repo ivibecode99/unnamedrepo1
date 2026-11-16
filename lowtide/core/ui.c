@@ -20,6 +20,7 @@ const u8 *ui_str(u8 id) API { return id < uicount ? uistr + uioff[id] : (const u
 
 u8 ui_win_y = 144, ui_say_open_y = 96, ui_say_close_y = 144;
 void ui_win(u8 y) API { ui_win_y = y; plat_win_y(y); }
+void ui_hide_sprites(void) API { u8 i; for (i = 0; i < 40; i++) plat_spr(i, 0, 200, 0, 0); }
 void ui_clear_win(void) API { plat_win_fill(0, 0, 32, 32, T_BLACK, P_UI); }
 
 static u8 glyph(u8 c) { return (c >= 32 && c < 127) ? (u8)(T_FONT + c - 32) : T_FONT; }

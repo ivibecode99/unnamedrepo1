@@ -149,8 +149,20 @@ void plat_quit(void) {}
 void main(void) {
     plat_init();
     core_init();
+#ifdef LT_PROFILE
+    {
+        u8 n = 0; u16 t0 = (u16)sys_time;
+        volatile u8 *prof = (volatile u8 *)0xBF00;
+        while (1) {
+            wait_vbl_done();
+            core_frame();
+            if (++n == 100) { u16 el = (u16)((u16)sys_time - t0); prof[0] = (u8)el; prof[1] = (u8)(el >> 8); prof[3]++; n = 0; t0 = (u16)sys_time; }
+        }
+    }
+#else
     while (1) {
         wait_vbl_done();
         core_frame();
     }
+#endif
 }

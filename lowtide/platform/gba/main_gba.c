@@ -36,7 +36,7 @@ typedef volatile uint16_t vu16; typedef volatile uint8_t vu8; typedef uint32_t u
 #define OFFY 8
 
 extern const unsigned char lt_blob[];
-const char sram_id[] __attribute__((used)) = "SRAM_V113";
+const char sram_id[] __attribute__((used, section(".sramtag"))) = "SRAM_V113";
 
 /* ---- chunks ---- */
 static u32 chunk_off(u16 id) { const u8 *e = lt_blob + 2 + id * 6; return e[0] | (e[1] << 8) | (e[2] << 16) | ((u32)e[3] << 24); }

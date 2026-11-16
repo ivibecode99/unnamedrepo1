@@ -56,6 +56,7 @@ u8 str_len(const u8 *s) API;
 void ui_init(void) API;
 void ui_clear_win(void) API;
 void ui_win(u8 y) API;
+void ui_hide_sprites(void) API;
 extern u8 ui_win_y, ui_say_open_y, ui_say_close_y;
 u16 world_take_script(void) API;
 u16 world_take_battle(void) API;
