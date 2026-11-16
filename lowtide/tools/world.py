@@ -67,6 +67,7 @@ class World:
         for i, m in enumerate(self.maps): struct.pack_into('<H', dirb, i * 2, self.compile_map(ch, m))
         dirb[510:513] = bytes([self.start[1], self.start[2], DIRS[self.start[3]]])
         assert len(self.maps) < 255
+        self.check_exits()
         ch.fixed(L['CH_MAPS'], dirb, 'maps')
         # encounters
         eb = bytearray(8 * (max(self.enc) + 2 if self.enc else 2))
@@ -141,6 +142,19 @@ class World:
         assert len(data) <= lib.L['SCENE_MAX'], (name, len(data))
         ch.set(E.battle_ids[name], data)
         self.bsize = getattr(self, 'bsize', {}); self.bsize[name] = len(data)
+    def check_exits(self):
+        byname = {m['name']: m for m in self.maps}
+        for m in self.maps:
+            for e in m['ents']:
+                if 'exit' not in e: continue
+                to, tx, ty, d = e['exit']
+                t = byname[to]; ts = self.tilesets[t['ts']]; rows = t['rows']
+                if not (0 <= ty < len(rows) and 0 <= tx < len(rows[0])): print('EXIT WARN', m['name'], '->', to, 'out of map'); continue
+                if ts.defs[rows[ty][tx]][3] & 1: print('EXIT WARN', m['name'], '->', to, f'arrival {tx},{ty} on solid tile')
+                for o in t['ents']:
+                    if o['k'] in (0, 2, 3, 4, 7) and (o['x'], o['y']) == (tx, ty) and not (o.get('gate') or o.get('ngate')):
+                        print('EXIT WARN', m['name'], '->', to, f"arrival {tx},{ty} overlaps entity {o['id']}")
+                    if o['k'] in (0, 2, 3, 4, 7) and (o['x'], o['y']) == (tx, ty) and o.get('ngate'): print('EXIT NOTE', m['name'], '->', to, f"arrival overlaps gated entity {o['id']} (ok only if gate var set)")
     def check_map(self, m):
         ts = self.tilesets[m['ts']]; rows = m['rows']; h = len(rows); w = len(rows[0])
         def solid(x, y): return not (0 <= x < w and 0 <= y < h) or bool(ts.defs[rows[y][x]][3] & 1)

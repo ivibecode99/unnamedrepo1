@@ -331,7 +331,7 @@ void game_play_frame(void) API {
     if (pmode == P_ENDING) {
         /* random-encounter battle in progress */
         if (battle_tick()) {
-            world_restore(); pmode = P_WORLD;
+            world_restore(); pmode = P_WORLD; fx_fade(0, 2);
             if (game_flag_title == 2) return;
         }
         return;
@@ -339,8 +339,8 @@ void game_play_frame(void) API {
     if (vm_running()) {
         world_mode_flag = 1;
         vm_tick();
-        if (!vm_running()) world_mode_flag = 0;
         if (!vm_fullscreen()) { world_tick(); if (pmode == P_WORLD) world_draw(); }
+        if (!vm_running()) world_mode_flag = 0;   /* cleared after world_tick so the A press that closed the box can't re-trigger the NPC */
         return;
     }
     world_mode_flag = 0;
@@ -366,3 +366,9 @@ void game_debug_apply(u8 map, u8 x, u8 y, u8 d, u8 n, const u8 *idx, const u8 *v
     (void)world_take_script();
     g_mode = M_PLAY;
 }
+
+#ifndef __SDCC
+#include <stdio.h>
+void play_dbg(char *o) API { sprintf(o, "P %d %d %d %d %d %d %d", g_mode, pmode, g.hp, g.maxhp, g.gold, g.lv, game_flag_title); }
+void vars_dbg(char *o) API { int i; o[0] = 'X'; o[1] = ' '; for (i = 0; i < 256; i++) sprintf(o + 2 + i * 2, "%02x", g.vars[i]); }
+#endif

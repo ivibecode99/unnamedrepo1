@@ -134,6 +134,7 @@ class Script:
             opts = a[1:]; b += bytes([8, E.var(a[0]), len(opts)])
             for o in opts: b += o.encode() + b'\0'
         elif c == 'warp': b += bytes([9, E.maps[a[0]], int(a[1]), int(a[2]), DIRS[a[3]] if len(a) > 3 else 0])
+        elif c == 'warpk': b += bytes([0x3E, E.maps[a[0]], int(a[1]), int(a[2]), DIRS[a[3]] if len(a) > 3 else 0])
         elif c == 'wait': b += bytes([0x0A, int(a[0])])
         elif c == 'fade': b += bytes([0x0B, 1 if a[0] == 'in' else 0])
         elif c == 'shake': b += bytes([0x0C, int(a[0]), int(a[1]) if len(a) > 1 else 2])

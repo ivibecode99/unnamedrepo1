@@ -167,4 +167,8 @@ void vm_set_chunk(u16 c) API;
 u16 vm_get_chunk(void) API;
 void vm_stop(void) API;
 void play_start_map(u8 map, u8 x, u8 y, u8 d) API;
+#ifndef __SDCC
+void vm_dbg(char *o) API; u8 ui_dbg_state(void) API; void ui_dbg_text(char *o) API; void world_dbg(char *o) API; void battle_dbg(char *o) API; void mg_dbg(char *o) API; void play_dbg(char *o) API; void vars_dbg(char *o) API;
+int battle_dbg_nbullets(void) API;
+#endif
 #endif

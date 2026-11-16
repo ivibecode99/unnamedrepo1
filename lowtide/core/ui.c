@@ -129,3 +129,8 @@ u8 ui_say_tick(void) API {
     return 0;
 }
 void ui_say_end(void) API { ui_win(ui_say_close_y); }
+
+#ifndef __SDCC
+u8 ui_dbg_state(void) API { return sstate; }
+void ui_dbg_text(char *o) API { int i; for (i = 0; i < 24; i++) o[i] = sp ? (char)(sp[i] >= 32 && sp[i] < 127 ? sp[i] : '.') : '?'; o[24] = 0; }
+#endif

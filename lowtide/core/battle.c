@@ -452,13 +452,14 @@ u8 battle_tick(void) API {
     return 0;
 dead_init:
     {
-        static u8 dead_state;
+        static u8 dead_state, dead_t;
         if (bs != BS_DEAD) return 0;
         if (!dead_state) {
-            dead_state = 1; sprites_off(); audio_stop(); audio_sfx(17); fx_fade(0, 1);
+            dead_state = 1; dead_t = 0; sprites_off(); audio_stop(); audio_sfx(17); fx_fade(0, 1);
             ui_win(0); ui_clear_win(); ui_print(1, 5, ui_str(S_GAMEOVER)); ui_print(5, 9, ui_str(S_RETRY)); ui_print(5, 11, ui_str(S_TITLE)); deadsel = 0;
         }
         for (i = 0; i < 2; i++) plat_win_set(3, (u8)(9 + i * 2), i == deadsel ? (u8)(T_UI + UI_CURSOR) : T_BLACK, P_UI);
+        if (dead_t < 40) { dead_t++; return 0; }   /* ignore held dodge keys so the game-over choice can't be hit by accident */
         if (g_pressed & (K_UP | K_DOWN)) deadsel ^= 1;
         if (g_pressed & K_A) {
             dead_state = 0;
@@ -469,3 +470,14 @@ dead_init:
         return 0;
     }
 }
+
+#ifndef __SDCC
+#include <stdio.h>
+void battle_dbg(char *o) API {
+    u8 i; char *p = o;
+    p += sprintf(p, "B %d %d %d %d %d %d %d %d %d %d %d %d", bs, bmsel, bsub, spareable, ehp, soul_x, soul_y, shield_cd, invuln, atk_x, nlisten, bitem_n);
+    p += sprintf(p, " %d,%d,%d,%d", bx0, by0, boxw, boxh);
+    for (i = 0; i < MAXB; i++) if (bl[i].gfx != 255) p += sprintf(p, " %d,%d,%d,%d", bl[i].x >> 4, bl[i].y >> 4, bl[i].vx, bl[i].vy);
+}
+int battle_dbg_nbullets(void) API { int n = 0, i; for (i = 0; i < MAXB; i++) if (bl[i].gfx != 255) n++; return n; }
+#endif

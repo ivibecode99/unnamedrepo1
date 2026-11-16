@@ -16,7 +16,7 @@ W.mapdef('shore1', 'shore', [
  "#..............#",
  "######..########"], 'shore',
  ents=[NPC('wick', 'wick', 7, 8, 'wick_talk', gate='wick_here'), NPC('gaff', 'gaff', 3, 4, 'gaff_talk'), SPOT('sign', 12, 4, 'sign_talk'),
-       EXIT('toshore2', 6, 11, 2, 1, 'shore2', 7, 1, 'down')],
+       EXIT('toshore2', 6, 11, 2, 1, 'shore2', 7, 10, 'up')],
  script="""
 :enter
 if intro_done goto enter_done

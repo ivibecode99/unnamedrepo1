@@ -117,6 +117,7 @@ static KeyEv *kev; static int nkev;
 static struct { int frame; char path[256]; } shots[64]; static int nshots;
 static int dbg_map = -1, dbg_x, dbg_y, dbg_d, dbg_n;
 static u8 dbg_idx[64], dbg_val[64];
+static int bridge;
 static int max_frames = -1, cur_frame, dumpstate;
 static int scale_out = 1;
 
@@ -201,6 +202,16 @@ static void frame_step(void) {
             if (ay < -12000) padkeys |= K_UP; if (ay > 12000) padkeys |= K_DOWN;
         }
     }
+    if (bridge) {
+        char line[64];
+        for (;;) {
+            if (!fgets(line, sizeof line, stdin)) { running = 0; return; }
+            if (line[0] == 'S') { char *nl = strchr(line, '\n'); if (nl) *nl = 0; soft_render(); soft_write_png(line + 2, 3); printf("SHOT\n"); fflush(stdout); continue; }
+            break;
+        }
+        if (line[0] == 'Q') { running = 0; return; }
+        scripted_keys = (u8)strtol(line, NULL, 16); use_scripted = 1; nkev = 0;
+    }
     if (use_scripted) {
         int i;
         for (i = 0; i < nkev; i++) if (kev[i].frame <= cur_frame) scripted_keys = kev[i].mask;
@@ -214,6 +225,15 @@ static void frame_step(void) {
         int i;
         for (i = 0; i < nshots; i++) if (shots[i].frame == cur_frame) soft_write_png(shots[i].path, scale_out);
     }
+    if (bridge) {
+        char buf[8192], t[1024];
+        play_dbg(t); printf("%s\n", t); vars_dbg(buf); printf("%s\n", buf);
+        vm_dbg(t); printf("%s\n", t);
+        world_dbg(buf); printf("%s\n", buf);
+        battle_dbg(buf); printf("%s\n", buf);
+        mg_dbg(t); printf("%s\nU %d\n", t, ui_dbg_state()); ui_dbg_text(t); printf("T %s\nEND\n", t);
+        fflush(stdout);
+    }
     cur_frame++;
     if (max_frames >= 0 && cur_frame >= max_frames) running = 0;
 }
@@ -224,6 +244,7 @@ static void usage_parse(int argc, char **argv) {
         if (!strcmp(argv[i], "--headless")) headless = 1;
         else if (!strcmp(argv[i], "--warp") && i + 4 < argc) { dbg_map = atoi(argv[++i]); dbg_x = atoi(argv[++i]); dbg_y = atoi(argv[++i]); dbg_d = atoi(argv[++i]); }
         else if (!strcmp(argv[i], "--var") && i + 1 < argc && dbg_n < 64) { int a, b; if (sscanf(argv[++i], "%d=%d", &a, &b) == 2) { dbg_idx[dbg_n] = (u8)a; dbg_val[dbg_n++] = (u8)b; } }
+        else if (!strcmp(argv[i], "--bridge")) bridge = 1;
         else if (!strcmp(argv[i], "--dmg")) soft_set_dmg(1);
         else if (!strcmp(argv[i], "--frames") && i + 1 < argc) max_frames = atoi(argv[++i]);
         else if (!strcmp(argv[i], "--sav") && i + 1 < argc) snprintf(savepath, sizeof savepath, "%s", argv[++i]);

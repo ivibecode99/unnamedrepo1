@@ -90,3 +90,13 @@ u8 mg_tick(void) API {
     }
     return 0;
 }
+
+#ifndef __SDCC
+#include <stdio.h>
+void mg_dbg(char *o) API {
+    u8 i; char *p = o; int want = -1;
+    p += sprintf(p, "G %d %d %d %d", mid, phase, hits, crate_alive ? crate_type : -1);
+    if (mid == 0) for (i = 0; i < NN; i++) { int age = (int)frame - (int)t_notes[i] * 4; if (!done[i] && age > 52 && age < 76) { want = lane[i]; break; } }
+    p += sprintf(p, " %d", want);
+}
+#endif

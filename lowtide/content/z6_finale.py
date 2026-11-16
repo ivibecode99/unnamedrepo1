@@ -181,7 +181,7 @@ chunk ending_true
 W.scene('ending_peace', """
 fade out
 music end_peace
-warp sea_shore 7 9 up
+warpk sea_shore 7 9 up
 fade in
 narr: The Great Lantern dims, softly, and the tide inside it breathes out.
 marrow.sad: Go on, then. {p}Go home.
@@ -198,7 +198,7 @@ ending 1
 W.scene('ending_neutral', """
 fade out
 music end_neutral
-warp sea_shore 7 9 up
+warpk sea_shore 7 9 up
 fade in
 narr: The Great Lantern cracks open. The tide inside it staggers out, tired and slow, and does not quite reach everyone.
 sea.sad: I'm here. I'm here. I'm... I'm not all here.
@@ -212,7 +212,7 @@ ending 2
 W.scene('ending_fight', """
 fade out
 music end_fight
-warp sea_shore 7 9 up
+warpk sea_shore 7 9 up
 fade in
 narr: You break the Great Lantern.
 narr: The sea breaks out of it, not as a tide, but as a blow. Water screams across every road in LOWTIDE.
@@ -228,7 +228,7 @@ ending 3
 W.scene('ending_true', """
 fade out
 music end_true
-warp sea_shore 7 9 up
+warpk sea_shore 7 9 up
 fade in
 narr: You sing. Every verse. From every shell. The one about the cradle of dark water, the one about the town on the hull.
 narr: The last verse comes through you like a tide through a door. It's the verse Marrow could never let her finish.

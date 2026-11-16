@@ -80,6 +80,7 @@ void vm_tick(void) API {
             if (battle_tick()) {
                 world_restore();
                 plat_chunk(v->chunk, g_scene, SCENE_MAX);
+                fx_fade(0, 2);
                 v->wait = W_NONE;
                 break;
             }
@@ -180,9 +181,27 @@ void vm_tick(void) API {
         case 0x39: { u8 m = S[v->ip]; u16 t = rd16(S + v->ip + 1); v->ip += 3; if (meta.endings & m) v->ip = t; } break;
         case 0x3A: world_mode_flag = S[v->ip++]; break;
         case 0x3B: battle_cmd(0x3B, S[v->ip++], 0); break;
+        case 0x3E: {
+            u8 m = S[v->ip], x = S[v->ip + 1], y = S[v->ip + 2], d = S[v->ip + 3];
+            u16 saved = v->chunk;
+            v->ip += 4;
+            tb_close(v);
+            fx_fade(8, 1); while (fx_busy()) { fx_tick(); plat_vsync(); }
+            world_load(m, x, y, d);
+            (void)world_take_script();
+            plat_chunk(saved, g_scene, SCENE_MAX);
+            v->chunk = saved;
+            fx_fade(0, 2);
+            break;
+        }
         case 0x3D: { u8 n = S[v->ip]; u16 t = rd16(S + v->ip + 1); v->ip += 3; if (g.gold >= n) v->ip = t; } break;
         case 0x3C: g.vars[S[v->ip]] = (u8)(g.vars[S[v->ip]] + 1 > 255 ? 255 : g.vars[S[v->ip]] + 1); v->ip++; break;
         default: v->active = 0; return;
         }
     }
 }
+
+#ifndef __SDCC
+#include <stdio.h>
+void vm_dbg(char *o) API { sprintf(o, "V %d %d %d %d", vms[0].active, vms[0].wait, vms[1].active, vms[0].chunk); }
+#endif

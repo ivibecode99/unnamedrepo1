@@ -233,7 +233,7 @@ static void plates_check(void) {
 }
 static void ent_rect_touch_player(Ent *e, u8 w, u8 h, u8 *inside) {
     u8 cx = (u8)(pxx + 8), cy = (u8)(pyy + 12);
-    *inside = (u8)(cx >= e->x && cx < (u8)(e->x + w) && cy >= e->y && cy < (u8)(e->y + h));
+    *inside = (u8)((u16)cx >= e->x && (u16)cx < (u16)e->x + w && (u16)cy >= e->y && (u16)cy < (u16)e->y + h);
 }
 static u16 find_interact(void) {
     u8 px2 = (u8)(pxx + 8), py2 = (u8)(pyy + 12), i;
@@ -244,7 +244,7 @@ static u16 find_interact(void) {
         if (!(e->kind == EK_NPC || e->kind == EK_SPOT || e->kind == EK_CHEST || e->kind == EK_SAVE)) continue;
         if (!(e->flags & 32 ? e->vis : ent_visible(e))) continue;
         if (!e->script) continue;
-        if (fx >= e->x && fx < (u8)(e->x + 16) && fy >= e->y && fy < (u8)(e->y + 16)) {
+        if ((u16)fx >= e->x && (u16)fx < (u16)e->x + 16 && (u16)fy >= e->y && (u16)fy < (u16)e->y + 16) {
             if (e->kind == EK_NPC) { u8 d = pdir; e->dir = (u8)(d == 0 ? 1 : d == 1 ? 0 : d == 2 ? 3 : 2); }
             return e->script;
         }
@@ -346,3 +346,14 @@ void world_draw(void) API {
     }
     while (oi < 40) plat_spr(oi++, 0, 200, 0, 0);
 }
+
+#ifndef __SDCC
+#include <stdio.h>
+void world_dbg(char *o) API {
+    u8 i; char *p = o;
+    p += sprintf(p, "W %d %d %d %d %d %d ", g.map, mw, mh, pxx, pyy, pdir);
+    for (i = 0; i < (u8)(mw * mh); i++) p += sprintf(p, "%d", meta_t[g_scene[MH_SIZE + i] * 6 + 5] & 1);
+    p += sprintf(p, " %d", nent);
+    for (i = 0; i < nent; i++) p += sprintf(p, " %d,%d,%d,%d,%d,%d", ents[i].kind, ents[i].x, ents[i].y, (ents[i].flags & 32) ? ents[i].vis : ent_visible(&ents[i]), ents[i].slot, ents[i].dir);
+}
+#endif

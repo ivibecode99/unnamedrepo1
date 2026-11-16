@@ -45,7 +45,6 @@ if rill_ask goto rill_again
 set rill_ask 1
 rill.happy: Hi hi! I'm Rill! I'm practicing the lullaby. Sill sings, I light the lanterns in time. It's tricky!
 rill.sad: I always miss the third lantern. Always the third. Will you try? Press the buttons in time!
-end
 :rill_again
 choice r "Try the song" "Not now"
 if r == 1 goto rill_no
