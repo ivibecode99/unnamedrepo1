@@ -32,7 +32,7 @@ Endings: Peace, Neutral, Fight and a hidden True ending (needs actions across al
 |---|---|
 | `lowtide.gbc` | Game Boy Color; also runs on original Game Boy / Pocket / Light (4 shades), GBA and Super Game Boy. MBC5 + battery SRAM, 512 KB |
 | `lowtide.gba` | Game Boy Advance (160x144 centred in the 240x160 screen) |
-| `lowtide-web.zip` | `index.html` + wasm. Serve over HTTP(S) (`python3 -m http.server`) and open it. Keyboard, gamepad, touch |
+| `lowtide-web.zip` (or `lowtide-web.html`) | one self-contained `index.html` (wasm embedded): just double-click it, or host it anywise. Keyboard, gamepad, touch |
 | `lowtide-windows-x64.zip` | Windows x64 (`lowtide.exe` + `SDL2.dll`) |
 | `lowtide-linux-x86_64.tar.gz`, `lowtide-linux-aarch64.tar.gz` | Linux (needs SDL2: `apt install libsdl2-2.0-0`) |
 | `lowtide-macos-universal.zip` | macOS arm64+x86_64 (built by CI) |

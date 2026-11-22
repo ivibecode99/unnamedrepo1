@@ -23,7 +23,7 @@ step "Windows x64"; if command -v x86_64-w64-mingw32-gcc >/dev/null && [ -d "${S
   (cd build/cmake-win && cmake ../.. -DCMAKE_TOOLCHAIN_FILE=../../cmake/mingw-w64-x86_64.cmake -DCMAKE_BUILD_TYPE=Release -DSDL2_DIR=$SDL2_MINGW/lib/cmake/SDL2 >/dev/null && make -j4 >/dev/null 2>&1)
   rm -rf build/pkg-win && mkdir -p build/pkg-win/lowtide && cp build/cmake-win/lowtide.exe $SDL2_MINGW/bin/SDL2.dll README.md build/pkg-win/lowtide/ && (cd build/pkg-win && zip -qr ../../$D/lowtide-windows-x64.zip lowtide); echo ok
 else echo "mingw-w64 / SDL2 mingw dev package not found: skipped"; fi
-step "Web"; if command -v emcc >/dev/null; then EM_CONFIG=${EM_CONFIG:-/tmp/em.cfg} ./tools/build_web.sh >/dev/null 2>&1 && (cd build/web && zip -qr ../../$D/lowtide-web.zip index.html index.js index.wasm) && echo ok || echo failed; else echo "emcc not found: skipped"; fi
+step "Web"; if command -v emcc >/dev/null; then EM_CONFIG=${EM_CONFIG:-/tmp/em.cfg} ./tools/build_web.sh >/dev/null 2>&1 && (cd build/web && zip -qr ../../$D/lowtide-web.zip index.html) && echo ok || echo failed; else echo "emcc not found: skipped"; fi
 step "Previews (sprite sheets, map sheet, music WAVs)"; python3 tools/sheet.py build/dist_art >/dev/null && python3 tools/render_music.py build/dist_music >/dev/null && (cd build && zip -qr ../$D/lowtide-art-music-previews.zip dist_art dist_music maps_sheet.png 2>/dev/null) && echo ok
 step "macOS universal"; echo "built by CI (.github/workflows/release.yml) on a macOS runner; cannot be built on this Linux host"
 ls -la $D
